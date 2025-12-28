@@ -666,8 +666,6 @@ que sejam necessárias.
 
 \subsection*{Problema 1}
 
-\subsection*{Problema 1}
-
 Uma travessia em largura (breadth-first) de uma árvore processa os nós nível por nível,
 começando pela raiz. Existem diferentes formas de implementar esta travessia,
 cada uma explorando um combinador recursivo distinto.
@@ -740,7 +738,7 @@ aplica |levels| recursivamente às subárvores,
 e depois combina o resultado usando |glevels|.
 O gene |glevels| trata dois casos: árvore vazia (retorna lista vazia)
 e nó com valor |a| e subárvores processadas (cria um novo nível com |a| e funde os restantes).
-
+</div>
 Anamorfismo |bft|:
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
@@ -766,11 +764,179 @@ A operação |ts ++ [l, r]| é essencial: coloca os filhos no fim, não no iníc
 
 \subsection*{Problema 2}
 
+O objetivo deste problema é derivar a implementação da função seno hiperbólico ($\sinh x$)
+a partir da sua série de Taylor, utilizando a lei da recursividade mútua e catamorfismos de números naturais.
+
+\textbf{A série de Taylor para $\sinh x$}
+
+A série de Taylor do seno hiperbólico é:
+\begin{displaymath}
+\sinh x = \sum_{n=0}^{\infty} \frac{x^{2n+1}}{(2n+1)!} = x + \frac{x^3}{3!} + \frac{x^5}{5!} + \cdots
+\end{displaymath}
+
+Para calcular esta série de forma iterativa e eficiente, mantemos um estado que evolui em cada iteração,
+e usamos um catamorfismo de números naturais para repetir este processo $n$ vezes.
+
+\textbf{Estrutura do estado iterativo}
+
+O estado é representado por um vector de cinco componentes |[s, h, k, j, m]|:
+\begin{itemize}
+    \item |s|: Soma acumulada dos termos da série.
+    \item |h|: Numerador do termo actual ($x^{2n+1}$).
+    \item |k|: Denominador do termo actual ($(2n+1)!$).
+    \item |j|: Produto dos dois próximos factores da sequência de denominadores.
+    \item |m|: Incremento linear para |j|.
+\end{itemize}
+
+A transição de um estado para o seguinte é dada pela função |loop|:
+\begin{displaymath}
+\text{novo estado} = \left[ \frac{h}{k} + s, \, x^2 h, \, k j, \, j + m, \, m + 8 \right]
+\end{displaymath}
+
+Estado inicial para $n = 0$:
+\begin{displaymath}
+\text{start } x = \left[ x, \, x^3, \, 6, \, 20, \, 22 \right]
+\end{displaymath}
+
+Este estado inicial contém já o primeiro termo da série (|s = x|) e prepara o cálculo do segundo termo
+(com |h = x^3| e |k = 6 = 3!|).
+
+Implementação:
+\begin{code}
+f_sinh :: Double -> Int -> Double
+f_sinh x n = head (worker n)
+  where
+    worker = cataNat (either (const (start x)) (loop x))
+
+    loop x state = case state of
+      [s, h, k, j, m] -> [h / k + s, x^2 * h, k * j, j + m, m + 8]
+
+    start x = [x, x^3, 6, 20, 22]
+\end{code}
+
+Diagrama do catamorfismo:
+\begin{eqnarray*}
+\xymatrix@@C=2cm{
+    |Nat0|
+           \ar[d]_-{|worker|}
+&
+    |1 + Nat0|
+           \ar[d]^{|id + worker|}
+           \ar[l]_-{|inNat|}
+\\
+     |[Double]|
+&
+     |1 + [Double]|
+           \ar[l]^-{|gene|}
+}
+\end{eqnarray*}
+
+O catamorfismo |worker| aplica iterativamente a função |loop x| começando no estado inicial |start x|.
+A função |gene| trata dois casos: para o caso base (zero), retorna o estado inicial; para o caso indutivo,
+aplica |loop x| ao estado resultante da iteração anterior. Por fim, |head| extrai o primeiro componente
+do vector final, que é a soma acumulada |s|.
+
+\textbf{Justificação matemática}
+
+A série de $\sinh x$ converge rapidamente. A relação entre termos consecutivos é:
+\begin{displaymath}
+\frac{t_{n+1}}{t_n} = \frac{x^2}{(2n+2)(2n+3)}
+\end{displaymath}
+
+Esta razão decrescente garante que, após um número finito de iterações, os novos termos contribuem
+negligenciavelmente para a soma, permitindo uma aproximação numérica precisa de $\sinh x$.
+
 \subsection*{Problema 3}
 
+O problema do fair-merge de duas sequências infinitas (Streams) descreve uma situação de alternância
+perfeita entre dois fluxos de dados, como observado no tráfego onde cada carro de uma via deixa passar
+um carro da outra via. O objetivo é definir esta operação como um anamorfismo de Streams,
+utilizando a lei dual da recursividade mútua.
+
+\textbf{A lei dual da recursividade mútua}
+
+A propriedade universal de um anamorfismo estabelece que uma função |either f g| pode ser expressa
+como um anamorfismo quando o seu comportamento externo segue uma certa estrutura. Para streams,
+a lei dual da recursividade mútua afirma:
+
+\begin{eqnarray*}
+\start
+    |either f g = anaStream (either h k)|
+\just\equiv{ propriedade universal }
+    |outStream . either f g = (id >< (either f g)) . (either h k)|
+\just\equiv{ fusão de somas }
+|
+    lcbr(
+       outStream . f = (id >< (either f g)) . h
+    )(
+       outStream . g = (id >< (either f g)) . k
+    )
+|
+\qed
+\end{eqnarray*}
+
+Esta lei permite-nos derivar o gene do anamorfismo a partir de duas funções mutuamente recursivas.
+
+\textbf{Aplicação ao fair-merge}
+
+O fair-merge alterna entre dois fluxos. As funções |h| e |k| que descrevem este comportamento são:
+\begin{itemize}
+    \item |h (Cons(x,xs), y) = Cons(x, k(xs,y))|: extrai |x| do primeiro fluxo e passa para |k|.
+    \item |k (x, Cons(y,ys)) = Cons(y, h(x,ys))|: extrai |y| do segundo fluxo e passa para |h|.
+\end{itemize}
+
+Aplicando |outStream| (que satisfaz |outStream (Cons(a,as)) = (a,as)|):
+\begin{itemize}
+    \item |outStream . h(Cons(x,xs), y) = (x, k(xs,y))|
+    \item |outStream . k(x, Cons(y,ys)) = (y, h(x,ys))|
+\end{itemize}
+
+Para construir o gene, utilizamos o isomorfismo |Either| para alternar entre os dois estados:
+\begin{itemize}
+    \item Quando o gene recebe |Left|, extrai de |h| e retorna o resultado encapsulado em |Right|.
+    \item Quando o gene recebe |Right|, extrai de |k| e retorna o resultado encapsulado em |Left|.
+\end{itemize}
+
+O gene implementa assim a alternância definida por |h| e |k|:
+\begin{itemize}
+    \item |gene (Left (Cons(x,xs), y)) = (x, Right (xs,y))|
+    \item |gene (Right (x, Cons(y,ys))) = (y, Left (x,ys))|
+\end{itemize}
+
+Implementação:
 \begin{code}
-fair_merge' = anaStream undefined
+fair_merge' = anaStream gene
+  where
+    gene (Left (Cons (x, xs), y)) = (x, Right (xs, y))
+    gene (Right (x, Cons (y, ys))) = (y, Left (x, ys))
 \end{code}
+
+Diagrama do anamorfismo:
+\begin{eqnarray*}
+\xymatrix@@C=2.5cm{
+    |Either (Stream a, Stream a) (Stream a, Stream a)|
+           \ar[d]_-{|fair_merge'|}
+           \ar[r]^-{|gene|}
+&
+    |a >< Either (Stream a, Stream a) (Stream a, Stream a)|
+           \ar[d]^{|id >< fair_merge'|}
+\\
+    |Stream a|
+&
+    |a >< Stream a|
+           \ar[l]^-{|Cons|}
+}
+\end{eqnarray*}
+
+O diagrama ilustra o passo do anamorfismo: o estado inicial é uma soma (escolha entre dois modos).
+O gene |gene| processa este estado, extrai um elemento e produz um novo estado alternado.
+O anamorfismo constrói iterativamente a stream final, preservando a alternância garantida pelo gene.
+
+\textbf{Funcionamento}
+
+Cada aplicação de |gene| extrai um elemento de um dos fluxos e inverte a escolha (via |Either|)
+para o próximo passo, garantindo assim que os elementos são consumidos alternadamente dos dois
+fluxos de entrada. Esta é a essência do fair-merge civilizado observado no problema do tráfego.
 
 \subsection*{Problema 4}
 

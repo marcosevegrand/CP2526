@@ -896,8 +896,6 @@ que sejam necessárias.
 
 \subsection*{Problema 1}
 
-\subsection*{Problema 1}
-
 Uma travessia em largura (breadth-first) de uma árvore processa os nós nível por nível,
 começando pela raiz. Existem diferentes formas de implementar esta travessia,
 cada uma explorando um combinador recursivo distinto.
@@ -958,8 +956,6 @@ Implementação:
 \column{3}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{5}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\Varid{bft}\mathbin{::}\Conid{BTree}\;\Varid{a}\to [\mskip1.5mu \Varid{a}\mskip1.5mu]{}\<[E]%
-\\
 \>[B]{}\Varid{bft}\;\Varid{t}\mathrel{=}\anaList{\Varid{gbf}}\;[\mskip1.5mu \Varid{t}\mskip1.5mu]{}\<[E]%
 \\
 \>[B]{}\hsindent{3}{}\<[3]%
@@ -999,8 +995,12 @@ O diagrama mostra como \ensuremath{\Varid{levels}} decompõe a árvore (via \ens
 aplica \ensuremath{\Varid{levels}} recursivamente às subárvores,
 e depois combina o resultado usando \ensuremath{\Varid{glevels}}.
 O gene \ensuremath{\Varid{glevels}} trata dois casos: árvore vazia (retorna lista vazia)
-e nó com valor \ensuremath{\Varid{a}} e subárvores processadas (cria um novo nível com \ensuremath{\Varid{a}} e funde os restantes).
-
+e nó com valor \ensuremath{\Varid{a}} e subárvores processadas (cria um novo nível com \ensuremath{\Varid{a}} e funde os restantes).\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mathbin{/}\cdot \div \cdot \mathbin{>}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
 Anamorfismo \ensuremath{\Varid{bft}}:
 \begin{eqnarray*}
 \xymatrix@C=2cm{
@@ -1026,14 +1026,199 @@ A operação \ensuremath{\Varid{ts}\mathbin{+\!\!+}[\mskip1.5mu \Varid{l},\Varid
 
 \subsection*{Problema 2}
 
-\subsection*{Problema 3}
+O objetivo deste problema é derivar a implementação da função seno hiperbólico ($\sinh x$)
+a partir da sua série de Taylor, utilizando a lei da recursividade mútua e catamorfismos de números naturais.
 
+\textbf{A série de Taylor para $\sinh x$}
+
+A série de Taylor do seno hiperbólico é:
+\begin{displaymath}
+\sinh x = \sum_{n=0}^{\infty} \frac{x^{2n+1}}{(2n+1)!} = x + \frac{x^3}{3!} + \frac{x^5}{5!} + \cdots
+\end{displaymath}
+
+Para calcular esta série de forma iterativa e eficiente, mantemos um estado que evolui em cada iteração,
+e usamos um catamorfismo de números naturais para repetir este processo $n$ vezes.
+
+\textbf{Estrutura do estado iterativo}
+
+O estado é representado por um vector de cinco componentes \ensuremath{[\mskip1.5mu \Varid{s},\Varid{h},\Varid{k},\Varid{j},\Varid{m}\mskip1.5mu]}:
+\begin{itemize}
+    \item \ensuremath{\Varid{s}}: Soma acumulada dos termos da série.
+    \item \ensuremath{\Varid{h}}: Numerador do termo actual ($x^{2n+1}$).
+    \item \ensuremath{\Varid{k}}: Denominador do termo actual ($(2n+1)!$).
+    \item \ensuremath{\Varid{j}}: Produto dos dois próximos factores da sequência de denominadores.
+    \item \ensuremath{\Varid{m}}: Incremento linear para \ensuremath{\Varid{j}}.
+\end{itemize}
+
+A transição de um estado para o seguinte é dada pela função \ensuremath{\Varid{loop}}:
+\begin{displaymath}
+\text{novo estado} = \left[ \frac{h}{k} + s, \, x^2 h, \, k j, \, j + m, \, m + 8 \right]
+\end{displaymath}
+
+Estado inicial para $n = 0$:
+\begin{displaymath}
+\text{start } x = \left[ x, \, x^3, \, 6, \, 20, \, 22 \right]
+\end{displaymath}
+
+Este estado inicial contém já o primeiro termo da série (\ensuremath{\Varid{s}\mathrel{=}\Varid{x}}) e prepara o cálculo do segundo termo
+(com \ensuremath{\Varid{h}\mathrel{=}\Varid{x}\mathbin{\uparrow}\mathrm{3}} e \ensuremath{\Varid{k}\mathrel{=}\mathrm{6}\mathrel{=}\mathrm{3}\mathbin{!}}).
+
+Implementação:
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{7}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\Varid{fair\char95 merge'}\mathrel{=}\lanabracket\,\bot \,\ranabracket{}\<[E]%
+\>[B]{}\Varid{f\char95 sinh}\mathbin{::}\Conid{Double}\to \Conid{Int}\to \Conid{Double}{}\<[E]%
+\\
+\>[B]{}\Varid{f\char95 sinh}\;\Varid{x}\;\Varid{n}\mathrel{=}\Varid{head}\;(\Varid{worker}\;\Varid{n}){}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mathbf{where}{}\<[E]%
+\\
+\>[3]{}\hsindent{2}{}\<[5]%
+\>[5]{}\Varid{worker}\mathrel{=}\cataNat{\alt{\underline{\Varid{start}\;\Varid{x}}}{\Varid{loop}\;\Varid{x}}}{}\<[E]%
+\\[\blanklineskip]%
+\>[3]{}\hsindent{2}{}\<[5]%
+\>[5]{}\Varid{loop}\;\Varid{x}\;\Varid{state}\mathrel{=}\mathbf{case}\;\Varid{state}\;\mathbf{of}{}\<[E]%
+\\
+\>[5]{}\hsindent{2}{}\<[7]%
+\>[7]{}[\mskip1.5mu \Varid{s},\Varid{h},\Varid{k},\Varid{j},\Varid{m}\mskip1.5mu]\to [\mskip1.5mu \Varid{h}\mathbin{/}\Varid{k}\mathbin{+}\Varid{s},\Varid{x}\mathbin{\uparrow}\mathrm{2}\mathbin{*}\Varid{h},\Varid{k}\mathbin{*}\Varid{j},\Varid{j}\mathbin{+}\Varid{m},\Varid{m}\mathbin{+}\mathrm{8}\mskip1.5mu]{}\<[E]%
+\\[\blanklineskip]%
+\>[3]{}\hsindent{2}{}\<[5]%
+\>[5]{}\Varid{start}\;\Varid{x}\mathrel{=}[\mskip1.5mu \Varid{x},\Varid{x}\mathbin{\uparrow}\mathrm{3},\mathrm{6},\mathrm{20},\mathrm{22}\mskip1.5mu]{}\<[E]%
 \ColumnHook
 \end{hscode}\resethooks
+
+Diagrama do catamorfismo:
+\begin{eqnarray*}
+\xymatrix@C=2cm{
+    \ensuremath{\N_0}
+           \ar[d]_-{\ensuremath{\Varid{worker}}}
+&
+    \ensuremath{\mathrm{1}\mathbin{+}\N_0}
+           \ar[d]^{\ensuremath{\Varid{id}\mathbin{+}\Varid{worker}}}
+           \ar[l]_-{\ensuremath{\mathsf{in}}}
+\\
+     \ensuremath{[\mskip1.5mu \Conid{Double}\mskip1.5mu]}
+&
+     \ensuremath{\mathrm{1}\mathbin{+}[\mskip1.5mu \Conid{Double}\mskip1.5mu]}
+           \ar[l]^-{\ensuremath{\Varid{gene}}}
+}
+\end{eqnarray*}
+
+O catamorfismo \ensuremath{\Varid{worker}} aplica iterativamente a função \ensuremath{\Varid{loop}\;\Varid{x}} começando no estado inicial \ensuremath{\Varid{start}\;\Varid{x}}.
+A função \ensuremath{\Varid{gene}} trata dois casos: para o caso base (zero), retorna o estado inicial; para o caso indutivo,
+aplica \ensuremath{\Varid{loop}\;\Varid{x}} ao estado resultante da iteração anterior. Por fim, \ensuremath{\Varid{head}} extrai o primeiro componente
+do vector final, que é a soma acumulada \ensuremath{\Varid{s}}.
+
+\textbf{Justificação matemática}
+
+A série de $\sinh x$ converge rapidamente. A relação entre termos consecutivos é:
+\begin{displaymath}
+\frac{t_{n+1}}{t_n} = \frac{x^2}{(2n+2)(2n+3)}
+\end{displaymath}
+
+Esta razão decrescente garante que, após um número finito de iterações, os novos termos contribuem
+negligenciavelmente para a soma, permitindo uma aproximação numérica precisa de $\sinh x$.
+
+\subsection*{Problema 3}
+
+O problema do fair-merge de duas sequências infinitas (Streams) descreve uma situação de alternância
+perfeita entre dois fluxos de dados, como observado no tráfego onde cada carro de uma via deixa passar
+um carro da outra via. O objetivo é definir esta operação como um anamorfismo de Streams,
+utilizando a lei dual da recursividade mútua.
+
+\textbf{A lei dual da recursividade mútua}
+
+A propriedade universal de um anamorfismo estabelece que uma função \ensuremath{\alt{\Varid{f}}{\Varid{g}}} pode ser expressa
+como um anamorfismo quando o seu comportamento externo segue uma certa estrutura. Para streams,
+a lei dual da recursividade mútua afirma:
+
+\begin{eqnarray*}
+\start
+    \ensuremath{\alt{\Varid{f}}{\Varid{g}}\mathrel{=}\lanabracket\,\alt{\Varid{h}}{\Varid{k}}\,\ranabracket}
+\just\equiv{ propriedade universal }
+    \ensuremath{\mathsf{out}\comp \alt{\Varid{f}}{\Varid{g}}\mathrel{=}(\Varid{id}\times\alt{\Varid{f}}{\Varid{g}})\comp \alt{\Varid{h}}{\Varid{k}}}
+\just\equiv{ fusão de somas }
+\ensuremath{\begin{lcbr}\mathsf{out}\comp \Varid{f}\mathrel{=}(\Varid{id}\times\alt{\Varid{f}}{\Varid{g}})\comp \Varid{h}\\\mathsf{out}\comp \Varid{g}\mathrel{=}(\Varid{id}\times\alt{\Varid{f}}{\Varid{g}})\comp \Varid{k}\end{lcbr}}
+\qed
+\end{eqnarray*}
+
+Esta lei permite-nos derivar o gene do anamorfismo a partir de duas funções mutuamente recursivas.
+
+\textbf{Aplicação ao fair-merge}
+
+O fair-merge alterna entre dois fluxos. As funções \ensuremath{\Varid{h}} e \ensuremath{\Varid{k}} que descrevem este comportamento são:
+\begin{itemize}
+    \item \ensuremath{\Varid{h}\;(\Conid{Cons}\;(\Varid{x},\Varid{xs}),\Varid{y})\mathrel{=}\Conid{Cons}\;(\Varid{x},\Varid{k}\;(\Varid{xs},\Varid{y}))}: extrai \ensuremath{\Varid{x}} do primeiro fluxo e passa para \ensuremath{\Varid{k}}.
+    \item \ensuremath{\Varid{k}\;(\Varid{x},\Conid{Cons}\;(\Varid{y},\Varid{ys}))\mathrel{=}\Conid{Cons}\;(\Varid{y},\Varid{h}\;(\Varid{x},\Varid{ys}))}: extrai \ensuremath{\Varid{y}} do segundo fluxo e passa para \ensuremath{\Varid{h}}.
+\end{itemize}
+
+Aplicando \ensuremath{\mathsf{out}} (que satisfaz \ensuremath{\mathsf{out}\;(\Conid{Cons}\;(\Varid{a},\Varid{as}))\mathrel{=}(\Varid{a},\Varid{as})}):
+\begin{itemize}
+    \item \ensuremath{\mathsf{out}\comp \Varid{h}\;(\Conid{Cons}\;(\Varid{x},\Varid{xs}),\Varid{y})\mathrel{=}(\Varid{x},\Varid{k}\;(\Varid{xs},\Varid{y}))}
+    \item \ensuremath{\mathsf{out}\comp \Varid{k}\;(\Varid{x},\Conid{Cons}\;(\Varid{y},\Varid{ys}))\mathrel{=}(\Varid{y},\Varid{h}\;(\Varid{x},\Varid{ys}))}
+\end{itemize}
+
+Para construir o gene, utilizamos o isomorfismo \ensuremath{\cdot +\cdot } para alternar entre os dois estados:
+\begin{itemize}
+    \item Quando o gene recebe \ensuremath{i_1}, extrai de \ensuremath{\Varid{h}} e retorna o resultado encapsulado em \ensuremath{i_2}.
+    \item Quando o gene recebe \ensuremath{i_2}, extrai de \ensuremath{\Varid{k}} e retorna o resultado encapsulado em \ensuremath{i_1}.
+\end{itemize}
+
+O gene implementa assim a alternância definida por \ensuremath{\Varid{h}} e \ensuremath{\Varid{k}}:
+\begin{itemize}
+    \item \ensuremath{\Varid{gene}\;(i_1\;(\Conid{Cons}\;(\Varid{x},\Varid{xs}),\Varid{y}))\mathrel{=}(\Varid{x},i_2\;(\Varid{xs},\Varid{y}))}
+    \item \ensuremath{\Varid{gene}\;(i_2\;(\Varid{x},\Conid{Cons}\;(\Varid{y},\Varid{ys})))\mathrel{=}(\Varid{y},i_1\;(\Varid{x},\Varid{ys}))}
+\end{itemize}
+
+Implementação:
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{fair\char95 merge'}\mathrel{=}\lanabracket\,\Varid{gene}\,\ranabracket{}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mathbf{where}{}\<[E]%
+\\
+\>[3]{}\hsindent{2}{}\<[5]%
+\>[5]{}\Varid{gene}\;(i_1\;(\Conid{Cons}\;(\Varid{x},\Varid{xs}),\Varid{y}))\mathrel{=}(\Varid{x},i_2\;(\Varid{xs},\Varid{y})){}\<[E]%
+\\
+\>[3]{}\hsindent{2}{}\<[5]%
+\>[5]{}\Varid{gene}\;(i_2\;(\Varid{x},\Conid{Cons}\;(\Varid{y},\Varid{ys})))\mathrel{=}(\Varid{y},i_1\;(\Varid{x},\Varid{ys})){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+Diagrama do anamorfismo:
+\begin{eqnarray*}
+\xymatrix@C=2.5cm{
+    \ensuremath{(\Conid{Stream}\;\Varid{a},\Conid{Stream}\;\Varid{a})+(\Conid{Stream}\;\Varid{a},\Conid{Stream}\;\Varid{a})}
+           \ar[d]_-{\ensuremath{\Varid{fair\char95 merge'}}}
+           \ar[r]^-{\ensuremath{\Varid{gene}}}
+&
+    \ensuremath{\Varid{a}\times(\Conid{Stream}\;\Varid{a},\Conid{Stream}\;\Varid{a})+(\Conid{Stream}\;\Varid{a},\Conid{Stream}\;\Varid{a})}
+           \ar[d]^{\ensuremath{\Varid{id}\times\Varid{fair\char95 merge'}}}
+\\
+    \ensuremath{\Conid{Stream}\;\Varid{a}}
+&
+    \ensuremath{\Varid{a}\times\Conid{Stream}\;\Varid{a}}
+           \ar[l]^-{\ensuremath{\Conid{Cons}}}
+}
+\end{eqnarray*}
+
+O diagrama ilustra o passo do anamorfismo: o estado inicial é uma soma (escolha entre dois modos).
+O gene \ensuremath{\Varid{gene}} processa este estado, extrai um elemento e produz um novo estado alternado.
+O anamorfismo constrói iterativamente a stream final, preservando a alternância garantida pelo gene.
+
+\textbf{Funcionamento}
+
+Cada aplicação de \ensuremath{\Varid{gene}} extrai um elemento de um dos fluxos e inverte a escolha (via \ensuremath{\cdot +\cdot })
+para o próximo passo, garantindo assim que os elementos são consumidos alternadamente dos dois
+fluxos de entrada. Esta é a essência do fair-merge civilizado observado no problema do tráfego.
 
 \subsection*{Problema 4}
 
