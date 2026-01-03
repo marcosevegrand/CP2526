@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2025.12.26)  3 JAN 2026 18:35
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2025.12.26)  3 JAN 2026 19:12
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1509,9 +1509,27 @@ Overfull \hbox (128.0374pt too wide) has occurred while \output is active
  []
 
 [13]
+Overfull \hbox (2.71823pt too wide) in paragraph at lines 1332--1333
+[]$\T1/PTSerif-TLF/m/it/10.95 h \OT1/cmr/m/n/10.95 [ []\OML/cmm/m/it/10.95 ; []
+ \OT1/cmr/m/n/10.95 ]$\T1/PTSans-TLF/m/n/10.95 : $[] [] \OT1/cmr/m/n/10.95 [ []
+\OML/cmm/m/it/10.95 ; []; [] \OT1/cmr/m/n/10.95 ] [ []\OML/cmm/m/it/10.95 ; [] 
+\OT1/cmr/m/n/10.95 ]$
+ []
+
+
+Overfull \hbox (128.0374pt too wide) has occurred while \output is active
+ [][]| 
+ []
+
+[14]
 \openout7 = `cp2526t.ptb'.
 
- <xymatrix 2x2 182>
+ <xymatrix 1x3 96>
+Overfull \hbox (128.0374pt too wide) has occurred while \output is active
+ [][]| 
+ []
+
+[15]
 No file cp2526t.ind.
 No file cp2526t.bbl.
 
@@ -1519,7 +1537,7 @@ Overfull \hbox (128.0374pt too wide) has occurred while \output is active
  [][]| 
  []
 
-[14] (./cp2526t.aux)
+[16] (./cp2526t.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-22>
@@ -1535,13 +1553,13 @@ Package rerunfilecheck Info: File `cp2526t.out' has not changed.
 (rerunfilecheck)             Checksum: 1D188B8CDF969C53DBC74774FEC30481;1480.
  ) 
 Here is how much of TeX's memory you used:
- 47828 strings out of 476106
- 1047013 string characters out of 5793932
+ 47842 strings out of 476106
+ 1047110 string characters out of 5793932
  1942975 words of memory out of 5000000
- 69124 multiletter control sequences out of 15000+600000
+ 69128 multiletter control sequences out of 15000+600000
  814834 words of font info for 155 fonts, out of 8000000 for 9000
  59 hyphenation exceptions out of 8191
- 99i,19n,101p,3281b,664s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 99i,21n,101p,3281b,664s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texlive/texmf-dist/fonts/type1/paratype/ptserif/PTF55F.pfb></usr/
 share/texlive/texmf-dist/fonts/type1/paratype/ptserif/PTF56F.pfb></usr/share/te
 xlive/texmf-dist/fonts/type1/paratype/ptserif/PTF75F.pfb></usr/share/texlive/te
@@ -1563,10 +1581,10 @@ ve/texmf-dist/fonts/type1/public/stmaryrd/stmary10.pfb></usr/share/texlive/texm
 f-dist/fonts/type1/public/stmaryrd/stmary9.pfb></usr/share/texlive/texmf-dist/f
 onts/type1/public/xypic/xyatip10.pfb></usr/share/texlive/texmf-dist/fonts/type1
 /public/xypic/xybtip10.pfb>
-Output written on cp2526t.pdf (15 pages, 1090993 bytes).
+Output written on cp2526t.pdf (17 pages, 1096082 bytes).
 PDF statistics:
- 314 PDF objects out of 1000 (max. 8388607)
- 240 compressed objects within 3 object streams
- 34 named destinations out of 1000 (max. 500000)
+ 334 PDF objects out of 1000 (max. 8388607)
+ 258 compressed objects within 3 object streams
+ 44 named destinations out of 1000 (max. 500000)
  102 words of extra memory for PDF output out of 10000 (max. 10000000)
 

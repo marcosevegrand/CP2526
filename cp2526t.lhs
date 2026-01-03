@@ -944,6 +944,11 @@ fluxos de entrada. Esta é a essência do fair-merge civilizado observado no pro
 
 
 
+
+
+
+
+
 \subsection*{Problema 4}
 
 Este problema envolve catamorfismos probabilísticos aplicados a um cenário de
@@ -951,104 +956,201 @@ transmissão de mensagens com falhas.
 
 \textbf{Análise do Problema}
 
-Uma unidade militar envia a mensagem |words "Vamos atacar hoje"| através de um aparelho
-de telegrafia com falhas probabilísticas:
+Uma unidade militar pretende enviar a mensagem |words "Vamos atacar hoje"| através de um
+aparelho de telegrafia com falhas probabilísticas:
 \begin{itemize}
-    \item Cada palavra tem $95\%$ de probabilidade de ser transmitida (5\% de ser perdida)
-    \item O código "stop" final tem 90\% de probabilidade de sucesso (10\% de falha)
+    \item Cada palavra tem $5\%$ de probabilidade de se perder (95\% de sucesso)
+    \item O código "stop" final tem $10\%$ de probabilidade de falha (90\% de sucesso)
 \end{itemize}
 
-\textbf{Implementação do Catamorfismo Probabilístico}
+\textbf{Catamorfismo Probabilístico}
+
+O catamorfismo |pcataList| processa listas de forma recursiva com comportamento probabilístico.
+A assinatura de tipo e implementação já foram definidas anteriormente:
 
 \begin{code}
-pcataList :: (Either () (a, Dist b) -> Dist b) -> [a] -> Dist b
 pcataList g = h
   where
     h [] = g (Left ())
     h (x:xs) = h xs >>= \r -> g (Right (x, return r))
 \end{code}
 
-O catamorfismo processa a lista recursivamente, aplicando o gene em cada passo.
-A composição monádica (|>>=|) garante que as probabilidades se propagam
-correctamente através da recursão.
+Este combinador é semelhante a |foldr| da biblioteca |List|, mas o gene é uma função
+probabilística que retorna distribuições.
 
 \textbf{Implementação do Gene}
 
+O gene descreve como processar cada elemento da lista recursivamente:
+
 \begin{code}
-gene :: Either () (String, Dist [String]) -> Dist [String]
-gene (Left ()) = choose 0.9 ["stop"] []
-gene (Right (word, distTail)) = do tail <- distTail
-                                   choose 0.95 (word:tail) tail
+gene :: Either () (String, [String]) -> Dist [String]
+gene (Left ())           = choose 0.9 ["stop"] []
+gene (Right (w, tail))   = choose 0.95 (w:tail) tail
 \end{code}
 
-O gene descreve o comportamento passo-a-passo:
-\begin{itemize}
-    \item \textbf{Caso base} (|Left ()|): Transmite "stop" com 90\% de sucesso, falha com 10\%
-    \item \textbf{Caso recursivo} (|Right|): Para cada palavra, transmite-a com 95\% de probabilidade
-    ou a perde com 5\% de probabilidade
-\end{itemize}
+\textbf{Explicação Detalhada do Gene}
 
-\textbf{Análise Probabilística}
-
-Para a mensagem |["Vamos", "atacar", "hoje"]|:
+O gene tem dois casos correspondentes à estrutura de soma |Either|:
 
 \begin{enumerate}
-\item \textbf{Perder apenas "atacar"}: Resultado |["Vamos","hoje","stop"]|
+\item \textbf{Caso base} |gene (Left ())|:
 
-\begin{displaymath}
-P = 0.95 \times 0.05 \times 0.95 \times 0.90 = 0.0406 = 4.06\%
-\end{displaymath}
+Quando não há mais palavras, o aparelho tenta enviar "stop":
+\begin{itemize}
+    \item Com probabilidade $90\%$: envia |["stop"]| com sucesso
+    \item Com probabilidade $10\%$: falha e retorna |[]| (nada enviado)
+\end{itemize}
 
-Explicação: Vamos OK (0.95), atacar perdida (0.05), hoje OK (0.95), stop OK (0.90)
+\item \textbf{Caso recursivo} |gene (Right (word, distTail))|:
 
-\item \textbf{Sem "stop" final}: Resultado |["Vamos","atacar","hoje"]|
+Recebe uma palavra e uma distribuição de probabilidade da cauda já processada.
+A composição monádica |distTail >>= \tail -> ...| garante que:
+\begin{itemize}
+    \item Para cada possível resultado |tail| da cauda
+    \item Com probabilidade $95\%$: a palavra é transmitida, retorna |word:tail|
+    \item Com probabilidade $5\%$: a palavra se perde, retorna apenas |tail|
+\end{itemize}
 
-\begin{displaymath}
-P = 0.95 \times 0.95 \times 0.95 \times 0.10 = 0.0857 = 8.57\%
-\end{displaymath}
+\end{enumerate}
 
-Explicação: Todas as palavras OK (0.95 cada), stop falha (0.10)
+\textbf{Análise Probabilística para} |["Vamos", "atacar", "hoje"]|
 
-\item \textbf{Transmissão perfeita}: Resultado |["Vamos","atacar","hoje","stop"]|
+Cada resultado final é formado pelas decisões independentes de transmissão de cada
+palavra e do "stop". As probabilidades multiplicam-se conforme a semântica do mónade |Dist|.
+
+\begin{enumerate}
+
+\item \textbf{Transmissão perfeita}: |["Vamos","atacar","hoje","stop"]|
+
+Todas as 3 palavras são transmitidas com sucesso E o "stop" é transmitido:
 
 \begin{displaymath}
 P = 0.95 \times 0.95 \times 0.95 \times 0.90 = 0.7712 = 77.12\%
 \end{displaymath}
 
-Explicação: Todas as palavras OK (0.95 cada), stop OK (0.90)
+Processamento pela recursão de |pcataList|:
+\begin{itemize}
+    \item |h []|: |gene (Left ())| $\to$ |choose 0.9 ["stop"] []|
+    \item |h ["hoje"]|: |choose 0.95 ["hoje","stop"] ["stop"]| (0.95)
+    \item |h ["atacar","hoje"]|: |choose 0.95 ["atacar","hoje","stop"] ["hoje","stop"]| (0.95 × 0.95)
+    \item |h ["Vamos","atacar","hoje"]|: resultado final (0.95 × 0.95 × 0.95 × 0.90)
+\end{itemize}
+
+\item \textbf{Falha no "stop"}: |["Vamos","atacar","hoje"]|
+
+Todas as 3 palavras são transmitidas MAS o "stop" falha (10\%):
+
+\begin{displaymath}
+P = 0.95 \times 0.95 \times 0.95 \times 0.10 = 0.0857 = 8.57\%
+\end{displaymath}
+
+Processamento:
+\begin{itemize}
+    \item |h []|: |gene (Left ())| $\to$ |choose 0.9 ["stop"] []| escolhe |[]| (probabilidade 0.1)
+    \item |h ["hoje"]|: obtém |[]|, transmite "hoje" $\to$ |["hoje"]|
+    \item |h ["atacar","hoje"]|: obtém |["hoje"]|, transmite "atacar" $\to$ |["atacar","hoje"]|
+    \item |h ["Vamos","atacar","hoje"]|: obtém |["atacar","hoje"]|, transmite "Vamos" $\to$ |["Vamos","atacar","hoje"]|
+\end{itemize}
+
+\item \textbf{Perda de "atacar"}: |["Vamos","hoje","stop"]|
+
+Apenas a palavra "atacar" se perde (5\%), as outras transmitem-se (95\% cada):
+
+\begin{displaymath}
+P = 0.95 \times 0.05 \times 0.95 \times 0.90 = 0.0406 = 4.06\%
+\end{displaymath}
+
+Processamento:
+\begin{itemize}
+    \item |h []|: |gene (Left ())| $\to$ |choose 0.9 ["stop"] []| escolhe |["stop"]| (probabilidade 0.9)
+    \item |h ["hoje"]|: obtém |["stop"]|, transmite "hoje" $\to$ |["hoje","stop"]|
+    \item |h ["atacar","hoje"]|: obtém |["hoje","stop"]|, perde "atacar" $\to$ |["hoje","stop"]|
+    \item |h ["Vamos","atacar","hoje"]|: obtém |["hoje","stop"]|, transmite "Vamos" $\to$ |["Vamos","hoje","stop"]|
+\end{itemize}
+
 \end{enumerate}
 
-\textbf{Testes}
+\textbf{Testes em Haskell}
 
 \begin{code}
-testTransmission = transmitir (words "Vamos atacar hoje")
+transmissao = transmitir (words "Vamos atacar hoje")
 
-probPerfecta = (== ["Vamos","atacar","hoje","stop"]) ?? testTransmission
-probSemStop = (== ["Vamos","atacar","hoje"]) ?? testTransmission
-probPerdaAtacar = (== ["Vamos","hoje","stop"]) ?? testTransmission
+probPerfecta = (== ["Vamos","atacar","hoje","stop"]) ?? transmissao
+probSemStop = (== ["Vamos","atacar","hoje"]) ?? transmissao
+probPerdaAtacar = (== ["Vamos","hoje","stop"]) ?? transmissao
 \end{code}
 
-Diagrama do catamorfismo probabilístico:
+Resultados esperados:
+\begin{itemize}
+    \item |probPerfecta| $\approx$ 0.7712 (77.12\%)
+    \item |probSemStop| $\approx$ 0.0857 (8.57\%)
+    \item |probPerdaAtacar| $\approx$ 0.0406 (4.06\%)
+\end{itemize}
+
+\textbf{Diagrama Explicativo}
+
+O catamorfismo |pcataList| segue o padrão clássico de fold, destruindo a estrutura
+de lista recursivamente e acumulando resultados probabilísticos:
 
 \begin{eqnarray*}
-\xymatrix@@C=1.8cm{
-    \Conid{[String]} \ar[d]_{\Conid{transmitir}}
-    & 1 + \Conid{String} \times \Conid{Dist [String]} \ar[d]^{\Conid{gene}} \ar[l]_{\Conid{out}}
-    \\
-    \Conid{Dist [String]} & \Conid{Dist}(1 + \Conid{String} \times \Conid{Dist [String]}) \ar[l]^{\Conid{pcata}}
+\xymatrix@@C=2cm{
+    \text{Lista } [a] \ar[d]_{\text{out}} \\
+    1 + (a \times \text{Dist } b) \ar[d]^{\text{gene}} \\
+    \text{Dist } b
 }
 \end{eqnarray*}
 
-O diagrama mostra como o catamorfismo probabilístico destrói a estrutura da lista,
-aplicando o gene em cada passo. A composição monádica garante que as probabilidades
-se multiplicam adequadamente ao longo da recursão.
+A recursão processa a lista de trás para a frente:
 
-\textbf{Justificação}
+\begin{eqnarray*}
+\text{pcataList } g \, [a_1, a_2, a_3] &= \\
+g(\text{Right}(a_1, \; g(\text{Right}(a_2, \; g(\text{Right}(a_3, \; g(\text{Left}())))))))
+\end{eqnarray*}
 
-O catamorfismo probabilístico |pcataList| generaliza o catamorfismo clássico de listas,
-permitindo que o gene seja uma função probabilística. A distribuição resultante contém
-automaticamente todas as combinações possíveis de sucessos e falhas, com as suas
-probabilidades correctamente calculadas através da lei da composição do mónade.
+\textbf{Justificação da Solução}
+
+A função |gene| encapsula correctamente o comportamento probabilístico do aparelho:
+
+\begin{enumerate}
+
+\item \textbf{Uso de |Either|}:
+A soma |Either () (a, Dist b)| representa:
+\begin{itemize}
+    \item |Left ()|: caso base, sem mais elementos
+    \item |Right (word, distTail)|: elemento actual e distribuição da cauda
+\end{itemize}
+
+\item \textbf{Composição monádica}:
+A expressão |distTail >>= \tail -> ...| garante que:
+\begin{itemize}
+    \item Cada resultado possível de |distTail| é processado
+    \item As probabilidades são multiplicadas automaticamente pelo mónade
+    \item A semântica é intuitiva e composicional
+\end{itemize}
+
+\item \textbf{Independência probabilística}:
+As falhas de cada palavra e do "stop" são modeladas como eventos independentes.
+A função |choose| multiplica as probabilidades correctamente.
+
+\item \textbf{Catamorfismo genérico}:
+|pcataList| é um catamorfismo que funciona com qualquer gene |g :: Either () (a, Dist b) -> Dist b|.
+O gene |gene| especializa-o para transmissão de mensagens.
+
+\item \textbf{Laziness em Haskell}:
+A definição recursiva funciona graças à avaliação preguiçosa (lazy evaluation) de Haskell.
+As distribuições infinitas são tratadas de forma transparente.
+
+\item \textbf{Definição de transmitir}:
+A função |transmitir = pcataList gene| (definida na linha 383) compõe o catamorfismo
+genérico com o gene específico para este problema, obtendo a solução desejada.
+
+\end{enumerate}
+
+A solução mostra como padrões funcionais clássicos (catamorfismos) podem ser elevados
+a contextos probabilísticos, mantendo a elegância e composicionalidade do código.
+
+
+
 
 
 %----------------- Índice remissivo (exige makeindex) -------------------------%

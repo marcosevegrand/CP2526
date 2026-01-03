@@ -1222,6 +1222,11 @@ fluxos de entrada. Esta é a essência do fair-merge civilizado observado no pro
 
 
 
+
+
+
+
+
 \subsection*{Problema 4}
 
 Este problema envolve catamorfismos probabilísticos aplicados a um cenário de
@@ -1229,22 +1234,23 @@ transmissão de mensagens com falhas.
 
 \textbf{Análise do Problema}
 
-Uma unidade militar envia a mensagem \ensuremath{\Varid{words}\;\text{\ttfamily \char34 Vamos~atacar~hoje\char34}} através de um aparelho
-de telegrafia com falhas probabilísticas:
+Uma unidade militar pretende enviar a mensagem \ensuremath{\Varid{words}\;\text{\ttfamily \char34 Vamos~atacar~hoje\char34}} através de um
+aparelho de telegrafia com falhas probabilísticas:
 \begin{itemize}
-    \item Cada palavra tem $95\%$ de probabilidade de ser transmitida (5\% de ser perdida)
-    \item O código "stop" final tem 90\% de probabilidade de sucesso (10\% de falha)
+    \item Cada palavra tem $5\%$ de probabilidade de se perder (95\% de sucesso)
+    \item O código "stop" final tem $10\%$ de probabilidade de falha (90\% de sucesso)
 \end{itemize}
 
-\textbf{Implementação do Catamorfismo Probabilístico}
+\textbf{Catamorfismo Probabilístico}
+
+O catamorfismo \ensuremath{\Varid{pcataList}} processa listas de forma recursiva com comportamento probabilístico.
+A assinatura de tipo e implementação já foram definidas anteriormente:
 
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{3}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{5}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\Varid{pcataList}\mathbin{::}(()+(\Varid{a},\fun{Dist}\;\Varid{b})\to \fun{Dist}\;\Varid{b})\to [\mskip1.5mu \Varid{a}\mskip1.5mu]\to \fun{Dist}\;\Varid{b}{}\<[E]%
-\\
 \>[B]{}\Varid{pcataList}\;\Varid{g}\mathrel{=}\Varid{h}{}\<[E]%
 \\
 \>[B]{}\hsindent{3}{}\<[3]%
@@ -1258,100 +1264,195 @@ de telegrafia com falhas probabilísticas:
 \ColumnHook
 \end{hscode}\resethooks
 
-O catamorfismo processa a lista recursivamente, aplicando o gene em cada passo.
-A composição monádica (\ensuremath{\bind }) garante que as probabilidades se propagam
-correctamente através da recursão.
+Este combinador é semelhante a \ensuremath{\Varid{foldr}} da biblioteca \ensuremath{\Conid{List}}, mas o gene é uma função
+probabilística que retorna distribuições.
 
 \textbf{Implementação do Gene}
 
+O gene descreve como processar cada elemento da lista recursivamente:
+
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
-\column{36}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{26}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\Varid{gene}\mathbin{::}()+(\Conid{String},\fun{Dist}\;[\mskip1.5mu \Conid{String}\mskip1.5mu])\to \fun{Dist}\;[\mskip1.5mu \Conid{String}\mskip1.5mu]{}\<[E]%
+\>[B]{}\Varid{gene}\mathbin{::}()+(\Conid{String},[\mskip1.5mu \Conid{String}\mskip1.5mu])\to \fun{Dist}\;[\mskip1.5mu \Conid{String}\mskip1.5mu]{}\<[E]%
 \\
-\>[B]{}\Varid{gene}\;(i_1\;())\mathrel{=}\Varid{choose}\;\mathrm{0.9}\;[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]\;[\mskip1.5mu \mskip1.5mu]{}\<[E]%
+\>[B]{}\Varid{gene}\;(i_1\;()){}\<[26]%
+\>[26]{}\mathrel{=}\Varid{choose}\;\mathrm{0.9}\;[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]\;[\mskip1.5mu \mskip1.5mu]{}\<[E]%
 \\
-\>[B]{}\Varid{gene}\;(i_2\;(\Varid{word},\Varid{distTail}))\mathrel{=}\mathbf{do}\;\Varid{tail}\leftarrow \Varid{distTail}{}\<[E]%
-\\
-\>[B]{}\hsindent{36}{}\<[36]%
-\>[36]{}\Varid{choose}\;\mathrm{0.95}\;(\Varid{word}\mathbin{:}\Varid{tail})\;\Varid{tail}{}\<[E]%
+\>[B]{}\Varid{gene}\;(i_2\;(\Varid{w},\Varid{tail})){}\<[26]%
+\>[26]{}\mathrel{=}\Varid{choose}\;\mathrm{0.95}\;(\Varid{w}\mathbin{:}\Varid{tail})\;\Varid{tail}{}\<[E]%
 \ColumnHook
 \end{hscode}\resethooks
 
-O gene descreve o comportamento passo-a-passo:
-\begin{itemize}
-    \item \textbf{Caso base} (\ensuremath{i_1\;()}): Transmite "stop" com 90\% de sucesso, falha com 10\%
-    \item \textbf{Caso recursivo} (\ensuremath{i_2}): Para cada palavra, transmite-a com 95\% de probabilidade
-    ou a perde com 5\% de probabilidade
-\end{itemize}
+\textbf{Explicação Detalhada do Gene}
 
-\textbf{Análise Probabilística}
-
-Para a mensagem \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}:
+O gene tem dois casos correspondentes à estrutura de soma \ensuremath{\cdot +\cdot }:
 
 \begin{enumerate}
-\item \textbf{Perder apenas "atacar"}: Resultado \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]}
+\item \textbf{Caso base} \ensuremath{\Varid{gene}\;(i_1\;())}:
 
-\begin{displaymath}
-P = 0.95 \times 0.05 \times 0.95 \times 0.90 = 0.0406 = 4.06\%
-\end{displaymath}
+Quando não há mais palavras, o aparelho tenta enviar "stop":
+\begin{itemize}
+    \item Com probabilidade $90\%$: envia \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]} com sucesso
+    \item Com probabilidade $10\%$: falha e retorna \ensuremath{[\mskip1.5mu \mskip1.5mu]} (nada enviado)
+\end{itemize}
 
-Explicação: Vamos OK (0.95), atacar perdida (0.05), hoje OK (0.95), stop OK (0.90)
+\item \textbf{Caso recursivo} \ensuremath{\Varid{gene}\;(i_2\;(\Varid{word},\Varid{distTail}))}:
 
-\item \textbf{Sem "stop" final}: Resultado \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}
+Recebe uma palavra e uma distribuição de probabilidade da cauda já processada.
+A composição monádica \ensuremath{\Varid{distTail}\bind \lambda \Varid{tail}\to \mathbin{...}} garante que:
+\begin{itemize}
+    \item Para cada possível resultado \ensuremath{\Varid{tail}} da cauda
+    \item Com probabilidade $95\%$: a palavra é transmitida, retorna \ensuremath{\Varid{word}\mathbin{:}\Varid{tail}}
+    \item Com probabilidade $5\%$: a palavra se perde, retorna apenas \ensuremath{\Varid{tail}}
+\end{itemize}
 
-\begin{displaymath}
-P = 0.95 \times 0.95 \times 0.95 \times 0.10 = 0.0857 = 8.57\%
-\end{displaymath}
+\end{enumerate}
 
-Explicação: Todas as palavras OK (0.95 cada), stop falha (0.10)
+\textbf{Análise Probabilística para} \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}
 
-\item \textbf{Transmissão perfeita}: Resultado \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]}
+Cada resultado final é formado pelas decisões independentes de transmissão de cada
+palavra e do "stop". As probabilidades multiplicam-se conforme a semântica do mónade \ensuremath{\fun{Dist}}.
+
+\begin{enumerate}
+
+\item \textbf{Transmissão perfeita}: \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]}
+
+Todas as 3 palavras são transmitidas com sucesso E o "stop" é transmitido:
 
 \begin{displaymath}
 P = 0.95 \times 0.95 \times 0.95 \times 0.90 = 0.7712 = 77.12\%
 \end{displaymath}
 
-Explicação: Todas as palavras OK (0.95 cada), stop OK (0.90)
+Processamento pela recursão de \ensuremath{\Varid{pcataList}}:
+\begin{itemize}
+    \item \ensuremath{\Varid{h}\;[\mskip1.5mu \mskip1.5mu]}: \ensuremath{\Varid{gene}\;(i_1\;())} $\to$ \ensuremath{\Varid{choose}\;\mathrm{0.9}\;[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]\;[\mskip1.5mu \mskip1.5mu]}
+    \item \ensuremath{\Varid{h}\;[\mskip1.5mu \text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}: \ensuremath{\Varid{choose}\;\mathrm{0.95}\;[\mskip1.5mu \text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]\;[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]} (0.95)
+    \item \ensuremath{\Varid{h}\;[\mskip1.5mu \text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}: \ensuremath{\Varid{choose}\;\mathrm{0.95}\;[\mskip1.5mu \text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]\;[\mskip1.5mu \text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]} (0.95 × 0.95)
+    \item \ensuremath{\Varid{h}\;[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}: resultado final (0.95 × 0.95 × 0.95 × 0.90)
+\end{itemize}
+
+\item \textbf{Falha no "stop"}: \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}
+
+Todas as 3 palavras são transmitidas MAS o "stop" falha (10\%):
+
+\begin{displaymath}
+P = 0.95 \times 0.95 \times 0.95 \times 0.10 = 0.0857 = 8.57\%
+\end{displaymath}
+
+Processamento:
+\begin{itemize}
+    \item \ensuremath{\Varid{h}\;[\mskip1.5mu \mskip1.5mu]}: \ensuremath{\Varid{gene}\;(i_1\;())} $\to$ \ensuremath{\Varid{choose}\;\mathrm{0.9}\;[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]\;[\mskip1.5mu \mskip1.5mu]} escolhe \ensuremath{[\mskip1.5mu \mskip1.5mu]} (probabilidade 0.1)
+    \item \ensuremath{\Varid{h}\;[\mskip1.5mu \text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}: obtém \ensuremath{[\mskip1.5mu \mskip1.5mu]}, transmite "hoje" $\to$ \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}
+    \item \ensuremath{\Varid{h}\;[\mskip1.5mu \text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}: obtém \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}, transmite "atacar" $\to$ \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}
+    \item \ensuremath{\Varid{h}\;[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}: obtém \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}, transmite "Vamos" $\to$ \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}
+\end{itemize}
+
+\item \textbf{Perda de "atacar"}: \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]}
+
+Apenas a palavra "atacar" se perde (5\%), as outras transmitem-se (95\% cada):
+
+\begin{displaymath}
+P = 0.95 \times 0.05 \times 0.95 \times 0.90 = 0.0406 = 4.06\%
+\end{displaymath}
+
+Processamento:
+\begin{itemize}
+    \item \ensuremath{\Varid{h}\;[\mskip1.5mu \mskip1.5mu]}: \ensuremath{\Varid{gene}\;(i_1\;())} $\to$ \ensuremath{\Varid{choose}\;\mathrm{0.9}\;[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]\;[\mskip1.5mu \mskip1.5mu]} escolhe \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]} (probabilidade 0.9)
+    \item \ensuremath{\Varid{h}\;[\mskip1.5mu \text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}: obtém \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]}, transmite "hoje" $\to$ \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]}
+    \item \ensuremath{\Varid{h}\;[\mskip1.5mu \text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}: obtém \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]}, perde "atacar" $\to$ \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]}
+    \item \ensuremath{\Varid{h}\;[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}: obtém \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]}, transmite "Vamos" $\to$ \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]}
+\end{itemize}
+
 \end{enumerate}
 
-\textbf{Testes}
+\textbf{Testes em Haskell}
 
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\Varid{testTransmission}\mathrel{=}\Varid{transmitir}\;(\Varid{words}\;\text{\ttfamily \char34 Vamos~atacar~hoje\char34}){}\<[E]%
+\>[B]{}\Varid{transmissao}\mathrel{=}\Varid{transmitir}\;(\Varid{words}\;\text{\ttfamily \char34 Vamos~atacar~hoje\char34}){}\<[E]%
 \\[\blanklineskip]%
-\>[B]{}\Varid{probPerfecta}\mathrel{=}(\equiv [\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu])\mathbin{??}\Varid{testTransmission}{}\<[E]%
+\>[B]{}\Varid{probPerfecta}\mathrel{=}(\equiv [\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu])\mathbin{??}\Varid{transmissao}{}\<[E]%
 \\
-\>[B]{}\Varid{probSemStop}\mathrel{=}(\equiv [\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu])\mathbin{??}\Varid{testTransmission}{}\<[E]%
+\>[B]{}\Varid{probSemStop}\mathrel{=}(\equiv [\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu])\mathbin{??}\Varid{transmissao}{}\<[E]%
 \\
-\>[B]{}\Varid{probPerdaAtacar}\mathrel{=}(\equiv [\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu])\mathbin{??}\Varid{testTransmission}{}\<[E]%
+\>[B]{}\Varid{probPerdaAtacar}\mathrel{=}(\equiv [\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu])\mathbin{??}\Varid{transmissao}{}\<[E]%
 \ColumnHook
 \end{hscode}\resethooks
 
-Diagrama do catamorfismo probabilístico:
+Resultados esperados:
+\begin{itemize}
+    \item \ensuremath{\Varid{probPerfecta}} $\approx$ 0.7712 (77.12\%)
+    \item \ensuremath{\Varid{probSemStop}} $\approx$ 0.0857 (8.57\%)
+    \item \ensuremath{\Varid{probPerdaAtacar}} $\approx$ 0.0406 (4.06\%)
+\end{itemize}
+
+\textbf{Diagrama Explicativo}
+
+O catamorfismo \ensuremath{\Varid{pcataList}} segue o padrão clássico de fold, destruindo a estrutura
+de lista recursivamente e acumulando resultados probabilísticos:
 
 \begin{eqnarray*}
-\xymatrix@C=1.8cm{
-    \Conid{[String]} \ar[d]_{\Conid{transmitir}}
-    & 1 + \Conid{String} \times \Conid{Dist [String]} \ar[d]^{\Conid{gene}} \ar[l]_{\Conid{out}}
-    \\
-    \Conid{Dist [String]} & \Conid{Dist}(1 + \Conid{String} \times \Conid{Dist [String]}) \ar[l]^{\Conid{pcata}}
+\xymatrix@C=2cm{
+    \text{Lista } [a] \ar[d]_{\text{out}} \\
+    1 + (a \times \text{Dist } b) \ar[d]^{\text{gene}} \\
+    \text{Dist } b
 }
 \end{eqnarray*}
 
-O diagrama mostra como o catamorfismo probabilístico destrói a estrutura da lista,
-aplicando o gene em cada passo. A composição monádica garante que as probabilidades
-se multiplicam adequadamente ao longo da recursão.
+A recursão processa a lista de trás para a frente:
 
-\textbf{Justificação}
+\begin{eqnarray*}
+\text{pcataList } g \, [a_1, a_2, a_3] &= \\
+g(\text{Right}(a_1, \; g(\text{Right}(a_2, \; g(\text{Right}(a_3, \; g(\text{Left}())))))))
+\end{eqnarray*}
 
-O catamorfismo probabilístico \ensuremath{\Varid{pcataList}} generaliza o catamorfismo clássico de listas,
-permitindo que o gene seja uma função probabilística. A distribuição resultante contém
-automaticamente todas as combinações possíveis de sucessos e falhas, com as suas
-probabilidades correctamente calculadas através da lei da composição do mónade.
+\textbf{Justificação da Solução}
+
+A função \ensuremath{\Varid{gene}} encapsula correctamente o comportamento probabilístico do aparelho:
+
+\begin{enumerate}
+
+\item \textbf{Uso de \ensuremath{\cdot +\cdot }}:
+A soma \ensuremath{()+(\Varid{a},\fun{Dist}\;\Varid{b})} representa:
+\begin{itemize}
+    \item \ensuremath{i_1\;()}: caso base, sem mais elementos
+    \item \ensuremath{i_2\;(\Varid{word},\Varid{distTail})}: elemento actual e distribuição da cauda
+\end{itemize}
+
+\item \textbf{Composição monádica}:
+A expressão \ensuremath{\Varid{distTail}\bind \lambda \Varid{tail}\to \mathbin{...}} garante que:
+\begin{itemize}
+    \item Cada resultado possível de \ensuremath{\Varid{distTail}} é processado
+    \item As probabilidades são multiplicadas automaticamente pelo mónade
+    \item A semântica é intuitiva e composicional
+\end{itemize}
+
+\item \textbf{Independência probabilística}:
+As falhas de cada palavra e do "stop" são modeladas como eventos independentes.
+A função \ensuremath{\Varid{choose}} multiplica as probabilidades correctamente.
+
+\item \textbf{Catamorfismo genérico}:
+\ensuremath{\Varid{pcataList}} é um catamorfismo que funciona com qualquer gene \ensuremath{\Varid{g}\mathbin{::}()+(\Varid{a},\fun{Dist}\;\Varid{b})\to \fun{Dist}\;\Varid{b}}.
+O gene \ensuremath{\Varid{gene}} especializa-o para transmissão de mensagens.
+
+\item \textbf{Laziness em Haskell}:
+A definição recursiva funciona graças à avaliação preguiçosa (lazy evaluation) de Haskell.
+As distribuições infinitas são tratadas de forma transparente.
+
+\item \textbf{Definição de transmitir}:
+A função \ensuremath{\Varid{transmitir}\mathrel{=}\Varid{pcataList}\;\Varid{gene}} (definida na linha 383) compõe o catamorfismo
+genérico com o gene específico para este problema, obtendo a solução desejada.
+
+\end{enumerate}
+
+A solução mostra como padrões funcionais clássicos (catamorfismos) podem ser elevados
+a contextos probabilísticos, mantendo a elegância e composicionalidade do código.
+
+
+
 
 
 %----------------- Índice remissivo (exige makeindex) -------------------------%
