@@ -972,7 +972,7 @@ A assinatura de tipo e implementação já foram definidas anteriormente:
 pcataList g = h
   where
     h [] = g (Left ())
-    h (x:xs) = h xs >>= \r -> g (Right (x, return r))
+    h (x:xs) = h xs >>= \r -> g (Right (x, r))
 \end{code}
 
 Este combinador é semelhante a |foldr| da biblioteca |List|, mas o gene é uma função
