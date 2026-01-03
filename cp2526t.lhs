@@ -126,7 +126,7 @@
 %====== DEFINIR GRUPO E ELEMENTOS =============================================%
 
 \group{G99}
-\studentA{xxxxxx}{Nome }
+\studentA{106807}{Marco Sèvegrand}
 \studentB{xxxxxx}{Nome }
 \studentC{xxxxxx}{Nome }
 
@@ -682,19 +682,6 @@ as subárvores esquerda e direita, recebendo listas de níveis para cada uma. O 
 nível no topo, e os restantes níveis são fundidos par a par através de |zipLevels|, alinhando elementos
 da mesma profundidade das duas subárvores.
 
-\textbf{Segunda abordagem: anamorfismo de listas}
-
-A função |bft| implementa uma travessia breadth-first através de um anamorfismo que utiliza uma fila
-de árvores. Ao contrário do catamorfismo que destrói a estrutura, o anamorfismo constrói
-incrementalmente a lista resultado.
-
-O algoritmo funciona da seguinte forma: iniciamos com uma fila contendo apenas a raiz da árvore.
-Depois, repetidamente, removemos a árvore da frente da fila. Se for |Empty|, ignoramo-la e prosseguimos.
-Se for um nó |Node|, extraímos o seu valor (que é emitido para a lista resultado) e adicionamos
-os seus filhos no \emph{fim} da fila. Este regime FIFO (first-in-first-out) garante que visitamos
-os nós exactamente na ordem breadth-first: primeiro todos os nós do nível 0 (raiz), depois nível 1,
-depois nível 2, e assim sucessivamente.
-
 Implementação:
 \begin{code}
 glevels :: Either () (a, ([[a]], [[a]])) -> [[a]]
@@ -706,15 +693,7 @@ glevels (Right (a, (ls, rs))) = [a] : zipLevels ls rs
     zipLevels (l:ls) (r:rs) = (l ++ r) : zipLevels ls rs
 \end{code}
 
-\begin{code}
-bft t = anaList gbf [t]
-  where
-    gbf [] = Left ()
-    gbf (Empty : ts) = gbf ts
-    gbf (Node (a, (l, r)) : ts) = Right (a, ts ++ [l, r])
-\end{code}
-
-Diagramas e Propriedades:
+Diagrama e Propriedades:
 
 Catamorfismo |levels|:
 \begin{eqnarray*}
@@ -738,7 +717,32 @@ aplica |levels| recursivamente às subárvores,
 e depois combina o resultado usando |glevels|.
 O gene |glevels| trata dois casos: árvore vazia (retorna lista vazia)
 e nó com valor |a| e subárvores processadas (cria um novo nível com |a| e funde os restantes).
-</div>
+
+\textbf{Segunda abordagem: anamorfismo de listas}
+
+A função |bft| implementa uma travessia breadth-first através de um anamorfismo que utiliza uma fila
+de árvores. Ao contrário do catamorfismo que destrói a estrutura, o anamorfismo constrói
+incrementalmente a lista resultado.
+
+O algoritmo funciona da seguinte forma: iniciamos com uma fila contendo apenas a raiz da árvore.
+Depois, repetidamente, removemos a árvore da frente da fila. Se for |Empty|, ignoramo-la e prosseguimos.
+Se for um nó |Node|, extraímos o seu valor (que é emitido para a lista resultado) e adicionamos
+os seus filhos no \emph{fim} da fila. Este regime FIFO (first-in-first-out) garante que visitamos
+os nós exactamente na ordem breadth-first: primeiro todos os nós do nível 0 (raiz), depois nível 1,
+depois nível 2, e assim sucessivamente.
+
+Implementação:
+
+\begin{code}
+bft t = anaList gbf [t]
+  where
+    gbf [] = Left ()
+    gbf (Empty : ts) = gbf ts
+    gbf (Node (a, (l, r)) : ts) = Right (a, ts ++ [l, r])
+\end{code}
+
+Diagrama e Propriedades:
+
 Anamorfismo |bft|:
 \begin{eqnarray*}
 \xymatrix@@C=2cm{
@@ -760,7 +764,6 @@ O gene |gbf| define o passo de construção da lista. A fila de árvores é cons
 se está vazia, o processo termina (|Left ()|); se contém uma árvore vazia, ignoramo-la recursivamente;
 se contém um nó, emitimos o seu valor e continuamos com os restantes elementos da fila mais os seus filhos.
 A operação |ts ++ [l, r]| é essencial: coloca os filhos no fim, não no início, mantendo a ordem breadth-first.
-
 
 \subsection*{Problema 2}
 
@@ -913,7 +916,7 @@ fair_merge' = anaStream gene
 
 Diagrama do anamorfismo:
 \begin{eqnarray*}
-\xymatrix@@C=2.5cm{
+\xymatrix@@C=2cm{
     |Either (Stream a, Stream a) (Stream a, Stream a)|
            \ar[d]_-{|fair_merge'|}
            \ar[r]^-{|gene|}
@@ -938,12 +941,114 @@ Cada aplicação de |gene| extrai um elemento de um dos fluxos e inverte a escol
 para o próximo passo, garantindo assim que os elementos são consumidos alternadamente dos dois
 fluxos de entrada. Esta é a essência do fair-merge civilizado observado no problema do tráfego.
 
+
+
+
 \subsection*{Problema 4}
 
+Este problema envolve catamorfismos probabilísticos aplicados a um cenário de
+transmissão de mensagens com falhas.
+
+\textbf{Análise do Problema}
+
+Uma unidade militar envia a mensagem |words "Vamos atacar hoje"| através de um aparelho
+de telegrafia com falhas probabilísticas:
+\begin{itemize}
+    \item Cada palavra tem $95\%$ de probabilidade de ser transmitida (5\% de ser perdida)
+    \item O código "stop" final tem 90\% de probabilidade de sucesso (10\% de falha)
+\end{itemize}
+
+\textbf{Implementação do Catamorfismo Probabilístico}
+
 \begin{code}
-pcataList = undefined
-gene = undefined
+pcataList :: (Either () (a, Dist b) -> Dist b) -> [a] -> Dist b
+pcataList g = h
+  where
+    h [] = g (Left ())
+    h (x:xs) = h xs >>= \r -> g (Right (x, return r))
 \end{code}
+
+O catamorfismo processa a lista recursivamente, aplicando o gene em cada passo.
+A composição monádica (|>>=|) garante que as probabilidades se propagam
+correctamente através da recursão.
+
+\textbf{Implementação do Gene}
+
+\begin{code}
+gene :: Either () (String, Dist [String]) -> Dist [String]
+gene (Left ()) = choose 0.9 ["stop"] []
+gene (Right (word, distTail)) = do tail <- distTail
+                                   choose 0.95 (word:tail) tail
+\end{code}
+
+O gene descreve o comportamento passo-a-passo:
+\begin{itemize}
+    \item \textbf{Caso base} (|Left ()|): Transmite "stop" com 90\% de sucesso, falha com 10\%
+    \item \textbf{Caso recursivo} (|Right|): Para cada palavra, transmite-a com 95\% de probabilidade
+    ou a perde com 5\% de probabilidade
+\end{itemize}
+
+\textbf{Análise Probabilística}
+
+Para a mensagem |["Vamos", "atacar", "hoje"]|:
+
+\begin{enumerate}
+\item \textbf{Perder apenas "atacar"}: Resultado |["Vamos","hoje","stop"]|
+
+\begin{displaymath}
+P = 0.95 \times 0.05 \times 0.95 \times 0.90 = 0.0406 = 4.06\%
+\end{displaymath}
+
+Explicação: Vamos OK (0.95), atacar perdida (0.05), hoje OK (0.95), stop OK (0.90)
+
+\item \textbf{Sem "stop" final}: Resultado |["Vamos","atacar","hoje"]|
+
+\begin{displaymath}
+P = 0.95 \times 0.95 \times 0.95 \times 0.10 = 0.0857 = 8.57\%
+\end{displaymath}
+
+Explicação: Todas as palavras OK (0.95 cada), stop falha (0.10)
+
+\item \textbf{Transmissão perfeita}: Resultado |["Vamos","atacar","hoje","stop"]|
+
+\begin{displaymath}
+P = 0.95 \times 0.95 \times 0.95 \times 0.90 = 0.7712 = 77.12\%
+\end{displaymath}
+
+Explicação: Todas as palavras OK (0.95 cada), stop OK (0.90)
+\end{enumerate}
+
+\textbf{Testes}
+
+\begin{code}
+testTransmission = transmitir (words "Vamos atacar hoje")
+
+probPerfecta = (== ["Vamos","atacar","hoje","stop"]) ?? testTransmission
+probSemStop = (== ["Vamos","atacar","hoje"]) ?? testTransmission
+probPerdaAtacar = (== ["Vamos","hoje","stop"]) ?? testTransmission
+\end{code}
+
+Diagrama do catamorfismo probabilístico:
+
+\begin{eqnarray*}
+\xymatrix@@C=1.8cm{
+    \Conid{[String]} \ar[d]_{\Conid{transmitir}}
+    & 1 + \Conid{String} \times \Conid{Dist [String]} \ar[d]^{\Conid{gene}} \ar[l]_{\Conid{out}}
+    \\
+    \Conid{Dist [String]} & \Conid{Dist}(1 + \Conid{String} \times \Conid{Dist [String]}) \ar[l]^{\Conid{pcata}}
+}
+\end{eqnarray*}
+
+O diagrama mostra como o catamorfismo probabilístico destrói a estrutura da lista,
+aplicando o gene em cada passo. A composição monádica garante que as probabilidades
+se multiplicam adequadamente ao longo da recursão.
+
+\textbf{Justificação}
+
+O catamorfismo probabilístico |pcataList| generaliza o catamorfismo clássico de listas,
+permitindo que o gene seja uma função probabilística. A distribuição resultante contém
+automaticamente todas as combinações possíveis de sucessos e falhas, com as suas
+probabilidades correctamente calculadas através da lei da composição do mónade.
 
 
 %----------------- Índice remissivo (exige makeindex) -------------------------%

@@ -269,7 +269,7 @@
 %====== DEFINIR GRUPO E ELEMENTOS =============================================%
 
 \group{G99}
-\studentA{xxxxxx}{Nome }
+\studentA{106807}{Marco Sèvegrand}
 \studentB{xxxxxx}{Nome }
 \studentC{xxxxxx}{Nome }
 
@@ -912,19 +912,6 @@ as subárvores esquerda e direita, recebendo listas de níveis para cada uma. O 
 nível no topo, e os restantes níveis são fundidos par a par através de \ensuremath{\Varid{zipLevels}}, alinhando elementos
 da mesma profundidade das duas subárvores.
 
-\textbf{Segunda abordagem: anamorfismo de listas}
-
-A função \ensuremath{\Varid{bft}} implementa uma travessia breadth-first através de um anamorfismo que utiliza uma fila
-de árvores. Ao contrário do catamorfismo que destrói a estrutura, o anamorfismo constrói
-incrementalmente a lista resultado.
-
-O algoritmo funciona da seguinte forma: iniciamos com uma fila contendo apenas a raiz da árvore.
-Depois, repetidamente, removemos a árvore da frente da fila. Se for \ensuremath{\Conid{Empty}}, ignoramo-la e prosseguimos.
-Se for um nó \ensuremath{\Conid{Node}}, extraímos o seu valor (que é emitido para a lista resultado) e adicionamos
-os seus filhos no \emph{fim} da fila. Este regime FIFO (first-in-first-out) garante que visitamos
-os nós exactamente na ordem breadth-first: primeiro todos os nós do nível 0 (raiz), depois nível 1,
-depois nível 2, e assim sucessivamente.
-
 Implementação:
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
@@ -951,28 +938,7 @@ Implementação:
 \ColumnHook
 \end{hscode}\resethooks
 
-\begin{hscode}\SaveRestoreHook
-\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
-\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
-\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
-\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\Varid{bft}\;\Varid{t}\mathrel{=}\anaList{\Varid{gbf}}\;[\mskip1.5mu \Varid{t}\mskip1.5mu]{}\<[E]%
-\\
-\>[B]{}\hsindent{3}{}\<[3]%
-\>[3]{}\mathbf{where}{}\<[E]%
-\\
-\>[3]{}\hsindent{2}{}\<[5]%
-\>[5]{}\Varid{gbf}\;[\mskip1.5mu \mskip1.5mu]\mathrel{=}i_1\;(){}\<[E]%
-\\
-\>[3]{}\hsindent{2}{}\<[5]%
-\>[5]{}\Varid{gbf}\;(\Conid{Empty}\mathbin{:}\Varid{ts})\mathrel{=}\Varid{gbf}\;\Varid{ts}{}\<[E]%
-\\
-\>[3]{}\hsindent{2}{}\<[5]%
-\>[5]{}\Varid{gbf}\;(\Conid{Node}\;(\Varid{a},(\Varid{l},\Varid{r}))\mathbin{:}\Varid{ts})\mathrel{=}i_2\;(\Varid{a},\Varid{ts}\mathbin{+\!\!+}[\mskip1.5mu \Varid{l},\Varid{r}\mskip1.5mu]){}\<[E]%
-\ColumnHook
-\end{hscode}\resethooks
-
-Diagramas e Propriedades:
+Diagrama e Propriedades:
 
 Catamorfismo \ensuremath{\Varid{levels}}:
 \begin{eqnarray*}
@@ -995,12 +961,46 @@ O diagrama mostra como \ensuremath{\Varid{levels}} decompõe a árvore (via \ens
 aplica \ensuremath{\Varid{levels}} recursivamente às subárvores,
 e depois combina o resultado usando \ensuremath{\Varid{glevels}}.
 O gene \ensuremath{\Varid{glevels}} trata dois casos: árvore vazia (retorna lista vazia)
-e nó com valor \ensuremath{\Varid{a}} e subárvores processadas (cria um novo nível com \ensuremath{\Varid{a}} e funde os restantes).\begin{hscode}\SaveRestoreHook
+e nó com valor \ensuremath{\Varid{a}} e subárvores processadas (cria um novo nível com \ensuremath{\Varid{a}} e funde os restantes).
+
+\textbf{Segunda abordagem: anamorfismo de listas}
+
+A função \ensuremath{\Varid{bft}} implementa uma travessia breadth-first através de um anamorfismo que utiliza uma fila
+de árvores. Ao contrário do catamorfismo que destrói a estrutura, o anamorfismo constrói
+incrementalmente a lista resultado.
+
+O algoritmo funciona da seguinte forma: iniciamos com uma fila contendo apenas a raiz da árvore.
+Depois, repetidamente, removemos a árvore da frente da fila. Se for \ensuremath{\Conid{Empty}}, ignoramo-la e prosseguimos.
+Se for um nó \ensuremath{\Conid{Node}}, extraímos o seu valor (que é emitido para a lista resultado) e adicionamos
+os seus filhos no \emph{fim} da fila. Este regime FIFO (first-in-first-out) garante que visitamos
+os nós exactamente na ordem breadth-first: primeiro todos os nós do nível 0 (raiz), depois nível 1,
+depois nível 2, e assim sucessivamente.
+
+Implementação:
+
+\begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\mathbin{/}\cdot \div \cdot \mathbin{>}{}\<[E]%
+\>[B]{}\Varid{bft}\;\Varid{t}\mathrel{=}\anaList{\Varid{gbf}}\;[\mskip1.5mu \Varid{t}\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mathbf{where}{}\<[E]%
+\\
+\>[3]{}\hsindent{2}{}\<[5]%
+\>[5]{}\Varid{gbf}\;[\mskip1.5mu \mskip1.5mu]\mathrel{=}i_1\;(){}\<[E]%
+\\
+\>[3]{}\hsindent{2}{}\<[5]%
+\>[5]{}\Varid{gbf}\;(\Conid{Empty}\mathbin{:}\Varid{ts})\mathrel{=}\Varid{gbf}\;\Varid{ts}{}\<[E]%
+\\
+\>[3]{}\hsindent{2}{}\<[5]%
+\>[5]{}\Varid{gbf}\;(\Conid{Node}\;(\Varid{a},(\Varid{l},\Varid{r}))\mathbin{:}\Varid{ts})\mathrel{=}i_2\;(\Varid{a},\Varid{ts}\mathbin{+\!\!+}[\mskip1.5mu \Varid{l},\Varid{r}\mskip1.5mu]){}\<[E]%
 \ColumnHook
 \end{hscode}\resethooks
+
+Diagrama e Propriedades:
+
 Anamorfismo \ensuremath{\Varid{bft}}:
 \begin{eqnarray*}
 \xymatrix@C=2cm{
@@ -1022,7 +1022,6 @@ O gene \ensuremath{\Varid{gbf}} define o passo de construção da lista. A fila 
 se está vazia, o processo termina (\ensuremath{i_1\;()}); se contém uma árvore vazia, ignoramo-la recursivamente;
 se contém um nó, emitimos o seu valor e continuamos com os restantes elementos da fila mais os seus filhos.
 A operação \ensuremath{\Varid{ts}\mathbin{+\!\!+}[\mskip1.5mu \Varid{l},\Varid{r}\mskip1.5mu]} é essencial: coloca os filhos no fim, não no início, mantendo a ordem breadth-first.
-
 
 \subsection*{Problema 2}
 
@@ -1195,7 +1194,7 @@ Implementação:
 
 Diagrama do anamorfismo:
 \begin{eqnarray*}
-\xymatrix@C=2.5cm{
+\xymatrix@C=2cm{
     \ensuremath{(\Conid{Stream}\;\Varid{a},\Conid{Stream}\;\Varid{a})+(\Conid{Stream}\;\Varid{a},\Conid{Stream}\;\Varid{a})}
            \ar[d]_-{\ensuremath{\Varid{fair\char95 merge'}}}
            \ar[r]^-{\ensuremath{\Varid{gene}}}
@@ -1220,16 +1219,139 @@ Cada aplicação de \ensuremath{\Varid{gene}} extrai um elemento de um dos fluxo
 para o próximo passo, garantindo assim que os elementos são consumidos alternadamente dos dois
 fluxos de entrada. Esta é a essência do fair-merge civilizado observado no problema do tráfego.
 
+
+
+
 \subsection*{Problema 4}
+
+Este problema envolve catamorfismos probabilísticos aplicados a um cenário de
+transmissão de mensagens com falhas.
+
+\textbf{Análise do Problema}
+
+Uma unidade militar envia a mensagem \ensuremath{\Varid{words}\;\text{\ttfamily \char34 Vamos~atacar~hoje\char34}} através de um aparelho
+de telegrafia com falhas probabilísticas:
+\begin{itemize}
+    \item Cada palavra tem $95\%$ de probabilidade de ser transmitida (5\% de ser perdida)
+    \item O código "stop" final tem 90\% de probabilidade de sucesso (10\% de falha)
+\end{itemize}
+
+\textbf{Implementação do Catamorfismo Probabilístico}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{3}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{pcataList}\mathbin{::}(()+(\Varid{a},\fun{Dist}\;\Varid{b})\to \fun{Dist}\;\Varid{b})\to [\mskip1.5mu \Varid{a}\mskip1.5mu]\to \fun{Dist}\;\Varid{b}{}\<[E]%
+\\
+\>[B]{}\Varid{pcataList}\;\Varid{g}\mathrel{=}\Varid{h}{}\<[E]%
+\\
+\>[B]{}\hsindent{3}{}\<[3]%
+\>[3]{}\mathbf{where}{}\<[E]%
+\\
+\>[3]{}\hsindent{2}{}\<[5]%
+\>[5]{}\Varid{h}\;[\mskip1.5mu \mskip1.5mu]\mathrel{=}\Varid{g}\;(i_1\;()){}\<[E]%
+\\
+\>[3]{}\hsindent{2}{}\<[5]%
+\>[5]{}\Varid{h}\;(\Varid{x}\mathbin{:}\Varid{xs})\mathrel{=}\Varid{h}\;\Varid{xs}\bind \lambda \Varid{r}\to \Varid{g}\;(i_2\;(\Varid{x},\Varid{return}\;\Varid{r})){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+O catamorfismo processa a lista recursivamente, aplicando o gene em cada passo.
+A composição monádica (\ensuremath{\bind }) garante que as probabilidades se propagam
+correctamente através da recursão.
+
+\textbf{Implementação do Gene}
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{36}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{gene}\mathbin{::}()+(\Conid{String},\fun{Dist}\;[\mskip1.5mu \Conid{String}\mskip1.5mu])\to \fun{Dist}\;[\mskip1.5mu \Conid{String}\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{gene}\;(i_1\;())\mathrel{=}\Varid{choose}\;\mathrm{0.9}\;[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]\;[\mskip1.5mu \mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{gene}\;(i_2\;(\Varid{word},\Varid{distTail}))\mathrel{=}\mathbf{do}\;\Varid{tail}\leftarrow \Varid{distTail}{}\<[E]%
+\\
+\>[B]{}\hsindent{36}{}\<[36]%
+\>[36]{}\Varid{choose}\;\mathrm{0.95}\;(\Varid{word}\mathbin{:}\Varid{tail})\;\Varid{tail}{}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+O gene descreve o comportamento passo-a-passo:
+\begin{itemize}
+    \item \textbf{Caso base} (\ensuremath{i_1\;()}): Transmite "stop" com 90\% de sucesso, falha com 10\%
+    \item \textbf{Caso recursivo} (\ensuremath{i_2}): Para cada palavra, transmite-a com 95\% de probabilidade
+    ou a perde com 5\% de probabilidade
+\end{itemize}
+
+\textbf{Análise Probabilística}
+
+Para a mensagem \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}:
+
+\begin{enumerate}
+\item \textbf{Perder apenas "atacar"}: Resultado \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]}
+
+\begin{displaymath}
+P = 0.95 \times 0.05 \times 0.95 \times 0.90 = 0.0406 = 4.06\%
+\end{displaymath}
+
+Explicação: Vamos OK (0.95), atacar perdida (0.05), hoje OK (0.95), stop OK (0.90)
+
+\item \textbf{Sem "stop" final}: Resultado \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}
+
+\begin{displaymath}
+P = 0.95 \times 0.95 \times 0.95 \times 0.10 = 0.0857 = 8.57\%
+\end{displaymath}
+
+Explicação: Todas as palavras OK (0.95 cada), stop falha (0.10)
+
+\item \textbf{Transmissão perfeita}: Resultado \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]}
+
+\begin{displaymath}
+P = 0.95 \times 0.95 \times 0.95 \times 0.90 = 0.7712 = 77.12\%
+\end{displaymath}
+
+Explicação: Todas as palavras OK (0.95 cada), stop OK (0.90)
+\end{enumerate}
+
+\textbf{Testes}
 
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
-\>[B]{}\Varid{pcataList}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{testTransmission}\mathrel{=}\Varid{transmitir}\;(\Varid{words}\;\text{\ttfamily \char34 Vamos~atacar~hoje\char34}){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{probPerfecta}\mathrel{=}(\equiv [\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu])\mathbin{??}\Varid{testTransmission}{}\<[E]%
 \\
-\>[B]{}\Varid{gene}\mathrel{=}\bot {}\<[E]%
+\>[B]{}\Varid{probSemStop}\mathrel{=}(\equiv [\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu])\mathbin{??}\Varid{testTransmission}{}\<[E]%
+\\
+\>[B]{}\Varid{probPerdaAtacar}\mathrel{=}(\equiv [\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu])\mathbin{??}\Varid{testTransmission}{}\<[E]%
 \ColumnHook
 \end{hscode}\resethooks
+
+Diagrama do catamorfismo probabilístico:
+
+\begin{eqnarray*}
+\xymatrix@C=1.8cm{
+    \Conid{[String]} \ar[d]_{\Conid{transmitir}}
+    & 1 + \Conid{String} \times \Conid{Dist [String]} \ar[d]^{\Conid{gene}} \ar[l]_{\Conid{out}}
+    \\
+    \Conid{Dist [String]} & \Conid{Dist}(1 + \Conid{String} \times \Conid{Dist [String]}) \ar[l]^{\Conid{pcata}}
+}
+\end{eqnarray*}
+
+O diagrama mostra como o catamorfismo probabilístico destrói a estrutura da lista,
+aplicando o gene em cada passo. A composição monádica garante que as probabilidades
+se multiplicam adequadamente ao longo da recursão.
+
+\textbf{Justificação}
+
+O catamorfismo probabilístico \ensuremath{\Varid{pcataList}} generaliza o catamorfismo clássico de listas,
+permitindo que o gene seja uma função probabilística. A distribuição resultante contém
+automaticamente todas as combinações possíveis de sucessos e falhas, com as suas
+probabilidades correctamente calculadas através da lei da composição do mónade.
 
 
 %----------------- Índice remissivo (exige makeindex) -------------------------%
