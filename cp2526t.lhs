@@ -941,14 +941,6 @@ Cada aplicação de |gene| extrai um elemento de um dos fluxos e inverte a escol
 para o próximo passo, garantindo assim que os elementos são consumidos alternadamente dos dois
 fluxos de entrada. Esta é a essência do fair-merge civilizado observado no problema do tráfego.
 
-
-
-
-
-
-
-
-
 \subsection*{Problema 4}
 
 Este problema envolve catamorfismos probabilísticos aplicados a um cenário de
@@ -1148,10 +1140,6 @@ genérico com o gene específico para este problema, obtendo a solução desejad
 
 A solução mostra como padrões funcionais clássicos (catamorfismos) podem ser elevados
 a contextos probabilísticos, mantendo a elegância e composicionalidade do código.
-
-
-
-
 
 %----------------- Índice remissivo (exige makeindex) -------------------------%
 
