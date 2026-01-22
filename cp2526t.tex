@@ -269,8 +269,8 @@
 %====== DEFINIR GRUPO E ELEMENTOS =============================================%
 
 \group{G99}
-\studentA{106807}{Marco Sèvegrand}
-\studentB{xxxxxx}{Nome }
+\studentA{106807}{Marco Sèvegrand }
+\studentB{107372}{Nuno Rebelo }
 \studentC{xxxxxx}{Nome }
 
 %==============================================================================%
@@ -894,6 +894,8 @@ que sejam necessárias.
 \noindent
 \textbf{Importante}: Não pode ser alterado o texto deste ficheiro fora deste anexo.
 
+%--------------------------- PROBLEMA 1 -----------------------------------------%
+
 \subsection*{Problema 1}
 
 Uma travessia em largura (breadth-first) de uma árvore processa os nós nível por nível,
@@ -908,7 +910,7 @@ lista, obtendo o resultado breadth-first.
 
 Embora o resultado final seja breadth-first, o catamorfismo processa internamente a árvore de baixo
 para cima (visitando primeiro as subárvores). Quando chegamos a um nó, temos já processadas
-as subárvores esquerda e direita, recebendo listas de níveis para cada uma. O nó atual forma um novo
+as subárvores esquerda e direita, recebendo listas de níveis para cada uma. O nó actual forma um novo
 nível no topo, e os restantes níveis são fundidos par a par através de \ensuremath{\Varid{zipLevels}}, alinhando elementos
 da mesma profundidade das duas subárvores.
 
@@ -942,13 +944,13 @@ Diagrama e Propriedades:
 
 Catamorfismo \ensuremath{\Varid{levels}}:
 \begin{eqnarray*}
-\xymatrix@C=2cm{
+\xymatrix@C=1.5cm{
     \ensuremath{\Conid{BTree}\;\Varid{a}}
            \ar[d]_-{\ensuremath{\Varid{levels}}}
 &
     \ensuremath{\mathrm{1}\mathbin{+}\Varid{a}\times(\Conid{BTree}\;\Varid{a}\times\Conid{BTree}\;\Varid{a})}
            \ar[d]^{\ensuremath{\Varid{id}\mathbin{+}\Varid{id}\times(\Varid{levels}\times\Varid{levels})}}
-           \ar[l]_-{\ensuremath{\Varid{outBTree}}}
+           \ar[l]_-{in_{BTree}}
 \\
      \ensuremath{[\mskip1.5mu [\mskip1.5mu \Varid{a}\mskip1.5mu]\mskip1.5mu]}
 &
@@ -957,7 +959,7 @@ Catamorfismo \ensuremath{\Varid{levels}}:
 }
 \end{eqnarray*}
 
-O diagrama mostra como \ensuremath{\Varid{levels}} decompõe a árvore (via \ensuremath{\Varid{outBTree}}),
+O diagrama mostra como \ensuremath{\Varid{levels}} decompõe a árvore (via $\mathtt{in_{BTree}}$),
 aplica \ensuremath{\Varid{levels}} recursivamente às subárvores,
 e depois combina o resultado usando \ensuremath{\Varid{glevels}}.
 O gene \ensuremath{\Varid{glevels}} trata dois casos: árvore vazia (retorna lista vazia)
@@ -977,7 +979,6 @@ os nós exactamente na ordem breadth-first: primeiro todos os nós do nível 0 (
 depois nível 2, e assim sucessivamente.
 
 Implementação:
-
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{3}{@{}>{\hspre}l<{\hspost}@{}}%
@@ -1003,34 +1004,35 @@ Diagrama e Propriedades:
 
 Anamorfismo \ensuremath{\Varid{bft}}:
 \begin{eqnarray*}
-\xymatrix@C=2cm{
+\xymatrix@C=1.5cm{
     \ensuremath{[\mskip1.5mu \Conid{BTree}\;\Varid{a}\mskip1.5mu]}
-           \ar[d]_-{\ensuremath{\anaList{\Varid{gbf}}}}
+           \ar[d]_-{\ensuremath{\Varid{bft}}}
+           \ar[r]^-{\ensuremath{\Varid{gbf}}}
 &
     \ensuremath{\mathrm{1}\mathbin{+}\Varid{a}\times[\mskip1.5mu \Conid{BTree}\;\Varid{a}\mskip1.5mu]}
            \ar[d]^{\ensuremath{\Varid{id}\mathbin{+}\Varid{id}\times\anaList{\Varid{gbf}}}}
-           \ar[l]_-{\ensuremath{\Varid{gbf}}}
 \\
      \ensuremath{[\mskip1.5mu \Varid{a}\mskip1.5mu]}
 &
      \ensuremath{\mathrm{1}\mathbin{+}\Varid{a}\times[\mskip1.5mu \Varid{a}\mskip1.5mu]}
-           \ar[l]^-{\ensuremath{\Varid{inList}}}
+           \ar[l]^-{in_{List}}
 }
 \end{eqnarray*}
 
 O gene \ensuremath{\Varid{gbf}} define o passo de construção da lista. A fila de árvores é consumida por três casos:
 se está vazia, o processo termina (\ensuremath{i_1\;()}); se contém uma árvore vazia, ignoramo-la recursivamente;
 se contém um nó, emitimos o seu valor e continuamos com os restantes elementos da fila mais os seus filhos.
-A operação \ensuremath{\Varid{ts}\mathbin{+\!\!+}[\mskip1.5mu \Varid{l},\Varid{r}\mskip1.5mu]} é essencial: coloca os filhos no fim, não no início, mantendo a ordem breadth-first.
+A operação \ensuremath{\Varid{ts}\mathbin{+\!\!+}[\mskip1.5mu \Varid{l},\Varid{r}\mskip1.5mu]} coloca os filhos no fim, não no início, mantendo a ordem breadth-first.
+
+%--------------------------- PROBLEMA 2 -----------------------------------------%
 
 \subsection*{Problema 2}
 
-O objetivo deste problema é derivar a implementação da função seno hiperbólico ($\sinh x$)
+O objectivo deste problema é derivar a implementação da função seno hiperbólico ($\sinh x$)
 a partir da sua série de Taylor, utilizando a lei da recursividade mútua e catamorfismos de números naturais.
 
 \textbf{A série de Taylor para $\sinh x$}
 
-A série de Taylor do seno hiperbólico é:
 \begin{displaymath}
 \sinh x = \sum_{n=0}^{\infty} \frac{x^{2n+1}}{(2n+1)!} = x + \frac{x^3}{3!} + \frac{x^5}{5!} + \cdots
 \end{displaymath}
@@ -1043,8 +1045,8 @@ e usamos um catamorfismo de números naturais para repetir este processo $n$ vez
 O estado é representado por um vector de cinco componentes \ensuremath{[\mskip1.5mu \Varid{s},\Varid{h},\Varid{k},\Varid{j},\Varid{m}\mskip1.5mu]}:
 \begin{itemize}
     \item \ensuremath{\Varid{s}}: Soma acumulada dos termos da série.
-    \item \ensuremath{\Varid{h}}: Numerador do termo actual ($x^{2n+1}$).
-    \item \ensuremath{\Varid{k}}: Denominador do termo actual ($(2n+1)!$).
+    \item \ensuremath{\Varid{h}}: Numerador do termo atual ($x^{2n+1}$).
+    \item \ensuremath{\Varid{k}}: Denominador do termo atual ($(2n+1)!$).
     \item \ensuremath{\Varid{j}}: Produto dos dois próximos factores da sequência de denominadores.
     \item \ensuremath{\Varid{m}}: Incremento linear para \ensuremath{\Varid{j}}.
 \end{itemize}
@@ -1067,7 +1069,6 @@ Implementação:
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{3}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{5}{@{}>{\hspre}l<{\hspost}@{}}%
-\column{7}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\Varid{f\char95 sinh}\mathbin{::}\Conid{Double}\to \Conid{Int}\to \Conid{Double}{}\<[E]%
 \\
@@ -1077,14 +1078,14 @@ Implementação:
 \>[3]{}\mathbf{where}{}\<[E]%
 \\
 \>[3]{}\hsindent{2}{}\<[5]%
-\>[5]{}\Varid{worker}\mathrel{=}\cataNat{\alt{\underline{\Varid{start}\;\Varid{x}}}{\Varid{loop}\;\Varid{x}}}{}\<[E]%
-\\[\blanklineskip]%
-\>[3]{}\hsindent{2}{}\<[5]%
-\>[5]{}\Varid{loop}\;\Varid{x}\;\Varid{state}\mathrel{=}\mathbf{case}\;\Varid{state}\;\mathbf{of}{}\<[E]%
+\>[5]{}\Varid{worker}\mathrel{=}\cataNat{\Varid{gene}}{}\<[E]%
 \\
-\>[5]{}\hsindent{2}{}\<[7]%
-\>[7]{}[\mskip1.5mu \Varid{s},\Varid{h},\Varid{k},\Varid{j},\Varid{m}\mskip1.5mu]\to [\mskip1.5mu \Varid{h}\mathbin{/}\Varid{k}\mathbin{+}\Varid{s},\Varid{x}\mathbin{\uparrow}\mathrm{2}\mathbin{*}\Varid{h},\Varid{k}\mathbin{*}\Varid{j},\Varid{j}\mathbin{+}\Varid{m},\Varid{m}\mathbin{+}\mathrm{8}\mskip1.5mu]{}\<[E]%
-\\[\blanklineskip]%
+\>[3]{}\hsindent{2}{}\<[5]%
+\>[5]{}\Varid{gene}\mathrel{=}\alt{\underline{\Varid{start}\;\Varid{x}}}{\Varid{loop}\;\Varid{x}}{}\<[E]%
+\\
+\>[3]{}\hsindent{2}{}\<[5]%
+\>[5]{}\Varid{loop}\;\Varid{x}\;[\mskip1.5mu \Varid{s},\Varid{h},\Varid{k},\Varid{j},\Varid{m}\mskip1.5mu]\mathrel{=}[\mskip1.5mu \Varid{h}\mathbin{/}\Varid{k}\mathbin{+}\Varid{s},\Varid{x}\mathbin{\uparrow}\mathrm{2}\mathbin{*}\Varid{h},\Varid{k}\mathbin{*}\Varid{j},\Varid{j}\mathbin{+}\Varid{m},\Varid{m}\mathbin{+}\mathrm{8}\mskip1.5mu]{}\<[E]%
+\\
 \>[3]{}\hsindent{2}{}\<[5]%
 \>[5]{}\Varid{start}\;\Varid{x}\mathrel{=}[\mskip1.5mu \Varid{x},\Varid{x}\mathbin{\uparrow}\mathrm{3},\mathrm{6},\mathrm{20},\mathrm{22}\mskip1.5mu]{}\<[E]%
 \ColumnHook
@@ -1092,13 +1093,13 @@ Implementação:
 
 Diagrama do catamorfismo:
 \begin{eqnarray*}
-\xymatrix@C=2cm{
+\xymatrix@C=1.5cm{
     \ensuremath{\N_0}
            \ar[d]_-{\ensuremath{\Varid{worker}}}
 &
     \ensuremath{\mathrm{1}\mathbin{+}\N_0}
            \ar[d]^{\ensuremath{\Varid{id}\mathbin{+}\Varid{worker}}}
-           \ar[l]_-{\ensuremath{\mathsf{in}}}
+           \ar[l]_-{in_{Nat}}
 \\
      \ensuremath{[\mskip1.5mu \Conid{Double}\mskip1.5mu]}
 &
@@ -1112,136 +1113,183 @@ A função \ensuremath{\Varid{gene}} trata dois casos: para o caso base (zero), 
 aplica \ensuremath{\Varid{loop}\;\Varid{x}} ao estado resultante da iteração anterior. Por fim, \ensuremath{\Varid{head}} extrai o primeiro componente
 do vector final, que é a soma acumulada \ensuremath{\Varid{s}}.
 
-\textbf{Justificação matemática}
-
-A série de $\sinh x$ converge rapidamente. A relação entre termos consecutivos é:
-\begin{displaymath}
-\frac{t_{n+1}}{t_n} = \frac{x^2}{(2n+2)(2n+3)}
-\end{displaymath}
-
-Esta razão decrescente garante que, após um número finito de iterações, os novos termos contribuem
-negligenciavelmente para a soma, permitindo uma aproximação numérica precisa de $\sinh x$.
+%--------------------------- PROBLEMA 3 -----------------------------------------%
 
 \subsection*{Problema 3}
 
-O problema do fair-merge de duas sequências infinitas (Streams) descreve uma situação de alternância
-perfeita entre dois fluxos de dados, como observado no tráfego onde cada carro de uma via deixa passar
-um carro da outra via. O objetivo é definir esta operação como um anamorfismo de Streams,
-utilizando a lei dual da recursividade mútua.
+O problema do fair-merge consiste em intercalar duas sequências infinitas (streams)
+de forma alternada: um elemento da primeira, um da segunda, um da primeira, etc.
+O objectivo é expressar a função \ensuremath{\Varid{fair\char95 merge}} como um anamorfismo de streams,
+derivando o gene a partir da lei dual da recursividade mútua.
 
-\textbf{A lei dual da recursividade mútua}
+\textbf{Ponto de partida: a definição dada}
 
-A propriedade universal de um anamorfismo estabelece que uma função \ensuremath{\alt{\Varid{f}}{\Varid{g}}} pode ser expressa
-como um anamorfismo quando o seu comportamento externo segue uma certa estrutura. Para streams,
-a lei dual da recursividade mútua afirma:
+A função \ensuremath{\Varid{fair\char95 merge}} é definida por duas funções mutuamente recursivas:
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{h}\;(\Conid{Cons}\;(\Varid{x},\Varid{xs}),\Varid{y})\mathrel{=}\Conid{Cons}\;(\Varid{x},\Varid{k}\;(\Varid{xs},\Varid{y})){}\<[E]%
+\\
+\>[B]{}\Varid{k}\;(\Varid{x},\Conid{Cons}\;(\Varid{y},\Varid{ys}))\mathrel{=}\Conid{Cons}\;(\Varid{y},\Varid{h}\;(\Varid{x},\Varid{ys})){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+onde \ensuremath{\Varid{h}} extrai do primeiro stream e \ensuremath{\Varid{k}} extrai do segundo, alternando entre si.
 
+A função final é \ensuremath{\Varid{fair\char95 merge}\mathrel{=}\alt{\Varid{h}}{\Varid{k}}}, que escolhe entre começar por \ensuremath{\Varid{h}} ou \ensuremath{\Varid{k}}
+conforme o argumento seja \ensuremath{i_1} ou \ensuremath{i_2}.
+
+\textbf{Derivação da lei dual da recursividade mútua}
+
+Queremos encontrar um gene \ensuremath{\Varid{g}} tal que \ensuremath{\alt{\Varid{h}}{\Varid{k}}\mathrel{=}\lanabracket\,\Varid{g}\,\ranabracket}.
+Partindo da propriedade universal dos anamorfismos:
 \begin{eqnarray*}
 \start
-    \ensuremath{\alt{\Varid{f}}{\Varid{g}}\mathrel{=}\lanabracket\,\alt{\Varid{h}}{\Varid{k}}\,\ranabracket}
-\just\equiv{ propriedade universal }
-    \ensuremath{\mathsf{out}\comp \alt{\Varid{f}}{\Varid{g}}\mathrel{=}(\Varid{id}\times\alt{\Varid{f}}{\Varid{g}})\comp \alt{\Varid{h}}{\Varid{k}}}
-\just\equiv{ fusão de somas }
-\ensuremath{\begin{lcbr}\mathsf{out}\comp \Varid{f}\mathrel{=}(\Varid{id}\times\alt{\Varid{f}}{\Varid{g}})\comp \Varid{h}\\\mathsf{out}\comp \Varid{g}\mathrel{=}(\Varid{id}\times\alt{\Varid{f}}{\Varid{g}})\comp \Varid{k}\end{lcbr}}
+    \ensuremath{\Varid{f}\mathrel{=}\lanabracket\,\Varid{g}\,\ranabracket}
+\just\equiv{ universal-ana (56) }
+    \ensuremath{\mathsf{out}\comp \Varid{f}\mathrel{=}(\Varid{id}\times\Varid{f})\comp \Varid{g}}
+\end{eqnarray*}
+
+Aplicando a \ensuremath{\Varid{f}\mathrel{=}\alt{\Varid{h}}{\Varid{k}}} e \ensuremath{\Varid{g}\mathrel{=}\alt{\Varid{gh}}{\Varid{gk}}}:
+\begin{eqnarray*}
+\start
+    \ensuremath{\alt{\Varid{h}}{\Varid{k}}\mathrel{=}\lanabracket\,\alt{\Varid{gh}}{\Varid{gk}}\,\ranabracket}
+\just\equiv{ universal-ana (56) }
+    \ensuremath{\mathsf{out}\comp \alt{\Varid{h}}{\Varid{k}}\mathrel{=}(\Varid{id}\times\alt{\Varid{h}}{\Varid{k}})\comp \alt{\Varid{gh}}{\Varid{gk}}}
+\just\equiv{ fusão-+ (21) }
+    \ensuremath{\alt{\mathsf{out}\comp \Varid{h}}{\mathsf{out}\comp \Varid{k}}\mathrel{=}\alt{(\Varid{id}\times\alt{\Varid{h}}{\Varid{k}})\comp \Varid{gh}}{(\Varid{id}\times\alt{\Varid{h}}{\Varid{k}})\comp \Varid{gk}}}
+\just\equiv{ eq-+ (28) }
+\ensuremath{\begin{lcbr}\mathsf{out}\comp \Varid{h}\mathrel{=}(\Varid{id}\times\alt{\Varid{h}}{\Varid{k}})\comp \Varid{gh}\\\mathsf{out}\comp \Varid{k}\mathrel{=}(\Varid{id}\times\alt{\Varid{h}}{\Varid{k}})\comp \Varid{gk}\end{lcbr}}
 \qed
 \end{eqnarray*}
 
-Esta lei permite-nos derivar o gene do anamorfismo a partir de duas funções mutuamente recursivas.
+Esta é a \textbf{lei dual da recursividade mútua}: permite derivar os genes \ensuremath{\Varid{gh}} e \ensuremath{\Varid{gk}}
+a partir das funções mutuamente recursivas \ensuremath{\Varid{h}} e \ensuremath{\Varid{k}}.
 
 \textbf{Aplicação ao fair-merge}
 
-O fair-merge alterna entre dois fluxos. As funções \ensuremath{\Varid{h}} e \ensuremath{\Varid{k}} que descrevem este comportamento são:
-\begin{itemize}
-    \item \ensuremath{\Varid{h}\;(\Conid{Cons}\;(\Varid{x},\Varid{xs}),\Varid{y})\mathrel{=}\Conid{Cons}\;(\Varid{x},\Varid{k}\;(\Varid{xs},\Varid{y}))}: extrai \ensuremath{\Varid{x}} do primeiro fluxo e passa para \ensuremath{\Varid{k}}.
-    \item \ensuremath{\Varid{k}\;(\Varid{x},\Conid{Cons}\;(\Varid{y},\Varid{ys}))\mathrel{=}\Conid{Cons}\;(\Varid{y},\Varid{h}\;(\Varid{x},\Varid{ys}))}: extrai \ensuremath{\Varid{y}} do segundo fluxo e passa para \ensuremath{\Varid{h}}.
-\end{itemize}
+Calculemos \ensuremath{\mathsf{out}\comp \Varid{h}} e \ensuremath{\mathsf{out}\comp \Varid{k}}:
+\begin{eqnarray*}
+\start
+\ensuremath{\mathsf{out}\comp \Varid{h}\;(\Conid{Cons}\;(\Varid{x},\Varid{xs}),\Varid{y})}
+\just={definição de \ensuremath{\Varid{h}}}
+\ensuremath{\mathsf{out}\;(\Conid{Cons}\;(\Varid{x},\Varid{k}\;(\Varid{xs},\Varid{y})))}
+\just={definição de \ensuremath{\mathsf{out}}}
+\ensuremath{(\Varid{x},\Varid{k}\;(\Varid{xs},\Varid{y}))}
+\just={cancelamento-+ (19)}
+\ensuremath{(\Varid{x},\alt{\Varid{h}}{\Varid{k}}\;(i_2\;(\Varid{xs},\Varid{y})))}
+\just={def-× (79)}
+\ensuremath{(\Varid{id}\times\alt{\Varid{h}}{\Varid{k}})\;(\Varid{x},i_2\;(\Varid{xs},\Varid{y}))}
+\qed
+\end{eqnarray*}
 
-Aplicando \ensuremath{\mathsf{out}} (que satisfaz \ensuremath{\mathsf{out}\;(\Conid{Cons}\;(\Varid{a},\Varid{as}))\mathrel{=}(\Varid{a},\Varid{as})}):
-\begin{itemize}
-    \item \ensuremath{\mathsf{out}\comp \Varid{h}\;(\Conid{Cons}\;(\Varid{x},\Varid{xs}),\Varid{y})\mathrel{=}(\Varid{x},\Varid{k}\;(\Varid{xs},\Varid{y}))}
-    \item \ensuremath{\mathsf{out}\comp \Varid{k}\;(\Varid{x},\Conid{Cons}\;(\Varid{y},\Varid{ys}))\mathrel{=}(\Varid{y},\Varid{h}\;(\Varid{x},\Varid{ys}))}
-\end{itemize}
+Portanto, \ensuremath{\Varid{gh}\;(\Conid{Cons}\;(\Varid{x},\Varid{xs}),\Varid{y})\mathrel{=}(\Varid{x},i_2\;(\Varid{xs},\Varid{y}))}.
 
-Para construir o gene, utilizamos o isomorfismo \ensuremath{\cdot +\cdot } para alternar entre os dois estados:
-\begin{itemize}
-    \item Quando o gene recebe \ensuremath{i_1}, extrai de \ensuremath{\Varid{h}} e retorna o resultado encapsulado em \ensuremath{i_2}.
-    \item Quando o gene recebe \ensuremath{i_2}, extrai de \ensuremath{\Varid{k}} e retorna o resultado encapsulado em \ensuremath{i_1}.
-\end{itemize}
+Analogamente para \ensuremath{\Varid{k}}:
+\begin{eqnarray*}
+\start
+\ensuremath{\mathsf{out}\comp \Varid{k}\;(\Varid{x},\Conid{Cons}\;(\Varid{y},\Varid{ys}))}
+\just={definição de \ensuremath{\Varid{k}}}
+\ensuremath{\mathsf{out}\;(\Conid{Cons}\;(\Varid{y},\Varid{h}\;(\Varid{x},\Varid{ys})))}
+\just={definição de \ensuremath{\mathsf{out}}}
+\ensuremath{(\Varid{y},\Varid{h}\;(\Varid{x},\Varid{ys}))}
+\just={cancelamento-+ (19)}
+\ensuremath{(\Varid{y},\alt{\Varid{h}}{\Varid{k}}\;(i_1\;(\Varid{x},\Varid{ys})))}
+\just={def-× (79)}
+\ensuremath{(\Varid{id}\times\alt{\Varid{h}}{\Varid{k}})\;(\Varid{y},i_1\;(\Varid{x},\Varid{ys}))}
+\qed
+\end{eqnarray*}
 
-O gene implementa assim a alternância definida por \ensuremath{\Varid{h}} e \ensuremath{\Varid{k}}:
-\begin{itemize}
-    \item \ensuremath{\Varid{gene}\;(i_1\;(\Conid{Cons}\;(\Varid{x},\Varid{xs}),\Varid{y}))\mathrel{=}(\Varid{x},i_2\;(\Varid{xs},\Varid{y}))}
-    \item \ensuremath{\Varid{gene}\;(i_2\;(\Varid{x},\Conid{Cons}\;(\Varid{y},\Varid{ys})))\mathrel{=}(\Varid{y},i_1\;(\Varid{x},\Varid{ys}))}
-\end{itemize}
+Portanto, \ensuremath{\Varid{gk}\;(\Varid{x},\Conid{Cons}\;(\Varid{y},\Varid{ys}))\mathrel{=}(\Varid{y},i_1\;(\Varid{x},\Varid{ys}))}.
 
-Implementação:
+\textbf{O gene do anamorfismo}
+
+Combinando \ensuremath{\Varid{gh}} e \ensuremath{\Varid{gk}} num único gene \ensuremath{\Varid{gene}\mathrel{=}\alt{\Varid{gh}}{\Varid{gk}}}:
+\begin{eqnarray*}
+    \ensuremath{\Varid{gene}\;(i_1\;(\Conid{Cons}\;(\Varid{x},\Varid{xs}),\Varid{y}))} &=& \ensuremath{(\Varid{x},i_2\;(\Varid{xs},\Varid{y}))} \\
+    \ensuremath{\Varid{gene}\;(i_2\;(\Varid{x},\Conid{Cons}\;(\Varid{y},\Varid{ys})))} &=& \ensuremath{(\Varid{y},i_1\;(\Varid{x},\Varid{ys}))}
+\end{eqnarray*}
+
+O gene extrai um elemento do stream apropriado e \emph{troca o lado do Either}
+para garantir a alternância no passo seguinte.
+
+\textbf{Implementação}
+
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{3}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{17}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{48}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{fair\char95 merge'}\mathbin{::}(\Conid{Stream}\;\Varid{a},\Conid{Stream}\;\Varid{a})+(\Conid{Stream}\;\Varid{a},\Conid{Stream}\;\Varid{a})\to \Conid{Stream}\;\Varid{a}{}\<[E]%
+\\
 \>[B]{}\Varid{fair\char95 merge'}\mathrel{=}\lanabracket\,\Varid{gene}\,\ranabracket{}\<[E]%
 \\
 \>[B]{}\hsindent{3}{}\<[3]%
 \>[3]{}\mathbf{where}{}\<[E]%
 \\
 \>[3]{}\hsindent{2}{}\<[5]%
-\>[5]{}\Varid{gene}\;(i_1\;(\Conid{Cons}\;(\Varid{x},\Varid{xs}),\Varid{y}))\mathrel{=}(\Varid{x},i_2\;(\Varid{xs},\Varid{y})){}\<[E]%
+\>[5]{}\Varid{gene}\;(i_1\;{}\<[17]%
+\>[17]{}(\Conid{Cons}\;(\Varid{x},\Varid{xs}),\Varid{y}))\mathrel{=}(\Varid{x},i_2\;(\Varid{xs},\Varid{y})){}\<[E]%
 \\
 \>[3]{}\hsindent{2}{}\<[5]%
-\>[5]{}\Varid{gene}\;(i_2\;(\Varid{x},\Conid{Cons}\;(\Varid{y},\Varid{ys})))\mathrel{=}(\Varid{y},i_1\;(\Varid{x},\Varid{ys})){}\<[E]%
+\>[5]{}\Varid{gene}\;(i_2\;(\Varid{x},\Conid{Cons}\;(\Varid{y},\Varid{ys})))\mathrel{=}(\Varid{y},i_1\;{}\<[48]%
+\>[48]{}(\Varid{x},\Varid{ys})){}\<[E]%
 \ColumnHook
 \end{hscode}\resethooks
 
-Diagrama do anamorfismo:
+\textbf{Diagrama do anamorfismo}
+
 \begin{eqnarray*}
-\xymatrix@C=2cm{
-    \ensuremath{(\Conid{Stream}\;\Varid{a},\Conid{Stream}\;\Varid{a})+(\Conid{Stream}\;\Varid{a},\Conid{Stream}\;\Varid{a})}
+\xymatrix@C=1.5cm{
+    \ensuremath{(\Conid{S},\Conid{S})\mathbin{+}(\Conid{S},\Conid{S})}
            \ar[d]_-{\ensuremath{\Varid{fair\char95 merge'}}}
            \ar[r]^-{\ensuremath{\Varid{gene}}}
 &
-    \ensuremath{\Varid{a}\times(\Conid{Stream}\;\Varid{a},\Conid{Stream}\;\Varid{a})+(\Conid{Stream}\;\Varid{a},\Conid{Stream}\;\Varid{a})}
+    \ensuremath{\Varid{a}\times((\Conid{S},\Conid{S})\mathbin{+}(\Conid{S},\Conid{S}))}
            \ar[d]^{\ensuremath{\Varid{id}\times\Varid{fair\char95 merge'}}}
 \\
-    \ensuremath{\Conid{Stream}\;\Varid{a}}
+    \ensuremath{\Conid{S}}
 &
-    \ensuremath{\Varid{a}\times\Conid{Stream}\;\Varid{a}}
+    \ensuremath{\Varid{a}\times\Conid{S}}
            \ar[l]^-{\ensuremath{\Conid{Cons}}}
 }
 \end{eqnarray*}
+\begin{center}
+onde \ensuremath{\Conid{S}\mathrel{=}\Conid{Stream}\;\Varid{a}}
+\end{center}
 
-O diagrama ilustra o passo do anamorfismo: o estado inicial é uma soma (escolha entre dois modos).
-O gene \ensuremath{\Varid{gene}} processa este estado, extrai um elemento e produz um novo estado alternado.
-O anamorfismo constrói iterativamente a stream final, preservando a alternância garantida pelo gene.
+O anamorfismo constrói a stream resultado aplicando repetidamente o gene:
+cada aplicação extrai um elemento e produz um novo estado com o Either invertido,
+garantindo a alternância perfeita entre os dois streams de entrada.
 
-\textbf{Funcionamento}
 
-Cada aplicação de \ensuremath{\Varid{gene}} extrai um elemento de um dos fluxos e inverte a escolha (via \ensuremath{\cdot +\cdot })
-para o próximo passo, garantindo assim que os elementos são consumidos alternadamente dos dois
-fluxos de entrada. Esta é a essência do fair-merge civilizado observado no problema do tráfego.
+%--------------------------- PROBLEMA 4 -----------------------------------------%
 
 \subsection*{Problema 4}
 
-Este problema envolve catamorfismos probabilísticos aplicados a um cenário de
-transmissão de mensagens com falhas.
+O problema consiste em modelar a transmissão de uma mensagem através de um aparelho
+de telegrafia com falhas probabilísticas, usando um catamorfismo probabilístico.
 
-\textbf{Análise do Problema}
+\textbf{Especificação do problema}
 
-Uma unidade militar pretende enviar a mensagem \ensuremath{\Varid{words}\;\text{\ttfamily \char34 Vamos~atacar~hoje\char34}} através de um
-aparelho de telegrafia com falhas probabilísticas:
+A mensagem a transmitir é \ensuremath{\Varid{words}\;\text{\ttfamily \char34 Vamos~atacar~hoje\char34}\mathrel{=}[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}.
+O aparelho tem o seguinte comportamento:
 \begin{itemize}
-    \item Cada palavra tem $5\%$ de probabilidade de se perder (95\% de sucesso)
-    \item O código "stop" final tem $10\%$ de probabilidade de falha (90\% de sucesso)
+    \item Cada palavra tem 5\% de probabilidade de se perder (95\% de sucesso)
+    \item No final, o aparelho envia \ensuremath{\text{\ttfamily \char34 stop\char34}}, mas falha 10\% das vezes (90\% de sucesso)
 \end{itemize}
 
-\textbf{Catamorfismo Probabilístico}
+Queremos encontrar \ensuremath{\Varid{gene}} tal que \ensuremath{\Varid{transmitir}\mathrel{=}\Varid{pcataList}\;\Varid{gene}} descreva este comportamento.
 
-O catamorfismo \ensuremath{\Varid{pcataList}} processa listas de forma recursiva com comportamento probabilístico.
-A assinatura de tipo e implementação já foram definidas anteriormente:
+\textbf{Análise do catamorfismo probabilístico}
 
+O combinador \ensuremath{\Varid{pcataList}} é a versão probabilística de \ensuremath{\llparenthesis\, \cdot \,\rrparenthesis}:
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{3}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{5}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{14}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\Varid{pcataList}\;\Varid{g}\mathrel{=}\Varid{h}{}\<[E]%
 \\
@@ -1249,114 +1297,138 @@ A assinatura de tipo e implementação já foram definidas anteriormente:
 \>[3]{}\mathbf{where}{}\<[E]%
 \\
 \>[3]{}\hsindent{2}{}\<[5]%
-\>[5]{}\Varid{h}\;[\mskip1.5mu \mskip1.5mu]\mathrel{=}\Varid{g}\;(i_1\;()){}\<[E]%
+\>[5]{}\Varid{h}\;[\mskip1.5mu \mskip1.5mu]{}\<[14]%
+\>[14]{}\mathrel{=}\Varid{g}\;(i_1\;()){}\<[E]%
 \\
 \>[3]{}\hsindent{2}{}\<[5]%
 \>[5]{}\Varid{h}\;(\Varid{x}\mathbin{:}\Varid{xs})\mathrel{=}\Varid{h}\;\Varid{xs}\bind \lambda \Varid{r}\to \Varid{g}\;(i_2\;(\Varid{x},\Varid{r})){}\<[E]%
 \ColumnHook
 \end{hscode}\resethooks
 
-Este combinador é semelhante a \ensuremath{\Varid{foldr}} da biblioteca \ensuremath{\Conid{List}}, mas o gene é uma função
-probabilística que retorna distribuições.
+A diferença fundamental é que o gene \ensuremath{\Varid{g}} retorna uma distribuição \ensuremath{\fun{Dist}\;\Varid{b}},
+e a composição usa o operador monádico \ensuremath{\bind } para propagar as probabilidades.
 
-\textbf{Implementação do Gene}
+A recursão processa a lista da direita para a esquerda:
+\begin{displaymath}
+h\,[a_1, a_2, a_3] = h\,[a_2, a_3] \bind (\lambda r \to g\,(\text{Right}\,(a_1, r)))
+\end{displaymath}
 
-O gene descreve como processar cada elemento da lista recursivamente:
+Isto significa que \ensuremath{\Varid{r}} representa o resultado (já probabilístico) da transmissão
+da cauda da lista, e o gene decide se adiciona ou não o elemento actual.
+
+\textbf{Derivação do gene}
+
+O gene tem tipo \ensuremath{()+(\Conid{String},[\mskip1.5mu \Conid{String}\mskip1.5mu])\to \fun{Dist}\;[\mskip1.5mu \Conid{String}\mskip1.5mu]} e deve tratar dois casos:
+
+\emph{Caso base} — \ensuremath{\Varid{gene}\;(i_1\;())}:
+
+Não há mais palavras. O aparelho tenta enviar \ensuremath{\text{\ttfamily \char34 stop\char34}}:
+\begin{itemize}
+    \item Com probabilidade 0.9: sucesso, retorna \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]}
+    \item Com probabilidade 0.1: falha, retorna \ensuremath{[\mskip1.5mu \mskip1.5mu]}
+\end{itemize}
+
+\emph{Caso recursivo} — \ensuremath{\Varid{gene}\;(i_2\;(\Varid{palavra},\Varid{resto}))}:
+
+Recebe a palavra actual e \ensuremath{\Varid{resto}}, que é o resultado da transmissão da cauda.
+O aparelho tenta enviar a palavra:
+\begin{itemize}
+    \item Com probabilidade 0.95: sucesso, retorna \ensuremath{\Varid{palavra}\mathbin{:}\Varid{resto}}
+    \item Com probabilidade 0.05: falha, retorna \ensuremath{\Varid{resto}} (palavra perdida)
+\end{itemize}
+
+\textbf{Implementação}
 
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
-\column{26}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{31}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{45}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{62}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
 \>[B]{}\Varid{gene}\mathbin{::}()+(\Conid{String},[\mskip1.5mu \Conid{String}\mskip1.5mu])\to \fun{Dist}\;[\mskip1.5mu \Conid{String}\mskip1.5mu]{}\<[E]%
 \\
-\>[B]{}\Varid{gene}\;(i_1\;()){}\<[26]%
-\>[26]{}\mathrel{=}\Varid{choose}\;\mathrm{0.9}\;[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]\;[\mskip1.5mu \mskip1.5mu]{}\<[E]%
+\>[B]{}\Varid{gene}\;(i_1\;()){}\<[31]%
+\>[31]{}\mathrel{=}\Varid{choose}\;\mathrm{0.9}\;{}\<[45]%
+\>[45]{}[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]\;{}\<[62]%
+\>[62]{}[\mskip1.5mu \mskip1.5mu]{}\<[E]%
 \\
-\>[B]{}\Varid{gene}\;(i_2\;(\Varid{w},\Varid{tail})){}\<[26]%
-\>[26]{}\mathrel{=}\Varid{choose}\;\mathrm{0.95}\;(\Varid{w}\mathbin{:}\Varid{tail})\;\Varid{tail}{}\<[E]%
+\>[B]{}\Varid{gene}\;(i_2\;(\Varid{palavra},\Varid{resto}))\mathrel{=}\Varid{choose}\;\mathrm{0.95}\;(\Varid{palavra}\mathbin{:}\Varid{resto})\;\Varid{resto}{}\<[E]%
 \ColumnHook
 \end{hscode}\resethooks
 
-\textbf{Explicação Detalhada do Gene}
+\textbf{Diagrama do catamorfismo probabilístico}
 
-O gene tem dois casos correspondentes à estrutura de soma \ensuremath{\cdot +\cdot }:
+\begin{eqnarray*}
+\xymatrix@C=1.5cm{
+    \ensuremath{[\mskip1.5mu \Conid{String}\mskip1.5mu]}
+           \ar[d]_-{\ensuremath{\Varid{pcataList}\;\Varid{gene}}}
+&
+    \ensuremath{\mathrm{1}\mathbin{+}\Conid{String}\times[\mskip1.5mu \Conid{String}\mskip1.5mu]}
+           \ar[d]^{\ensuremath{\Varid{id}\mathbin{+}\Varid{id}\times\Varid{pcataList}\;\Varid{gene}}}
+           \ar[l]_-{in_{List}}
+\\
+    \ensuremath{\fun{Dist}\;[\mskip1.5mu \Conid{String}\mskip1.5mu]}
+&
+    \ensuremath{\mathrm{1}\mathbin{+}\Conid{String}\times\fun{Dist}\;[\mskip1.5mu \Conid{String}\mskip1.5mu]}
+           \ar[l]^-{\ensuremath{\Varid{gene'}}}
+}
+\end{eqnarray*}
 
-\begin{enumerate}
-\item \textbf{Caso base} \ensuremath{\Varid{gene}\;(i_1\;())}:
+onde \ensuremath{\Varid{gene'}\mathrel{=}\alt{\Varid{gene}\comp i_1}{\lambda (\Varid{a},\Varid{d})\to \Varid{d}\bind \lambda \Varid{r}\to \Varid{gene}\;(i_2\;(\Varid{a},\Varid{r}))}}
+combina o gene com a propagação monádica das probabilidades.
 
-Quando não há mais palavras, o aparelho tenta enviar "stop":
+\textbf{Verificação: cálculo manual das probabilidades}
+
+Seja \ensuremath{\Varid{msg}\mathrel{=}[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}. Calculemos \ensuremath{\Varid{pcataList}\;\Varid{gene}\;\Varid{msg}}:
+
+\emph{Passo 1} — \ensuremath{\Varid{h}\;[\mskip1.5mu \mskip1.5mu]\mathrel{=}\Varid{gene}\;(i_1\;())\mathrel{=}\Varid{choose}\;\mathrm{0.9}\;[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]\;[\mskip1.5mu \mskip1.5mu]}
+
+Distribuição inicial:
+\begin{displaymath}
+D_0 = \left\{ \begin{array}{ll} \text{\ensuremath{[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]}} & \text{com prob. } 0.9 \\ \text{\ensuremath{[\mskip1.5mu \mskip1.5mu]}}  & \text{com prob. } 0.1 \end{array} \right.
+\end{displaymath}
+
+\emph{Passo 2} — \ensuremath{\Varid{h}\;[\mskip1.5mu \text{\ttfamily \char34 hoje\char34}\mskip1.5mu]\mathrel{=}\Varid{h}\;[\mskip1.5mu \mskip1.5mu]\bind \lambda \Varid{r}\to \Varid{gene}\;(i_2\;(\text{\ttfamily \char34 hoje\char34},\Varid{r}))}
+
+Para cada resultado \ensuremath{\Varid{r}} de $D_0$, aplicamos \ensuremath{\Varid{gene}\;(i_2\;(\text{\ttfamily \char34 hoje\char34},\Varid{r}))}:
 \begin{itemize}
-    \item Com probabilidade $90\%$: envia \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]} com sucesso
-    \item Com probabilidade $10\%$: falha e retorna \ensuremath{[\mskip1.5mu \mskip1.5mu]} (nada enviado)
+    \item \ensuremath{\Varid{r}\mathrel{=}[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]}: \ensuremath{\Varid{choose}\;\mathrm{0.95}\;[\mskip1.5mu \text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]\;[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]}
+    \item \ensuremath{\Varid{r}\mathrel{=}[\mskip1.5mu \mskip1.5mu]}: \ensuremath{\Varid{choose}\;\mathrm{0.95}\;[\mskip1.5mu \text{\ttfamily \char34 hoje\char34}\mskip1.5mu]\;[\mskip1.5mu \mskip1.5mu]}
 \end{itemize}
 
-\item \textbf{Caso recursivo} \ensuremath{\Varid{gene}\;(i_2\;(\Varid{word},\Varid{distTail}))}:
+Distribuição após "hoje":
+\begin{displaymath}
+D_1 = \left\{ \begin{array}{lll}
+\text{\ensuremath{[\mskip1.5mu \text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]}} & 0.9 \times 0.95 &= 0.855 \\
+\text{\ensuremath{[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]}}        & 0.9 \times 0.05 &= 0.045 \\
+\text{\ensuremath{[\mskip1.5mu \text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}}        & 0.1 \times 0.95 &= 0.095 \\
+\text{\ensuremath{[\mskip1.5mu \mskip1.5mu]}}              & 0.1 \times 0.05 &= 0.005
+\end{array} \right.
+\end{displaymath}
 
-Recebe uma palavra e uma distribuição de probabilidade da cauda já processada.
-A composição monádica \ensuremath{\Varid{distTail}\bind \lambda \Varid{tail}\to \mathbin{...}} garante que:
-\begin{itemize}
-    \item Para cada possível resultado \ensuremath{\Varid{tail}} da cauda
-    \item Com probabilidade $95\%$: a palavra é transmitida, retorna \ensuremath{\Varid{word}\mathbin{:}\Varid{tail}}
-    \item Com probabilidade $5\%$: a palavra se perde, retorna apenas \ensuremath{\Varid{tail}}
-\end{itemize}
+\emph{Passo 3} — \ensuremath{\Varid{h}\;[\mskip1.5mu \text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}: análogo, multiplica cada linha por 0.95 (sucesso) ou 0.05 (falha).
 
-\end{enumerate}
+\emph{Passo 4} — \ensuremath{\Varid{h}\;[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}: idem.
 
-\textbf{Análise Probabilística para} \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}
+\textbf{Resultados finais}
 
-Cada resultado final é formado pelas decisões independentes de transmissão de cada
-palavra e do "stop". As probabilidades multiplicam-se conforme a semântica do mónade \ensuremath{\fun{Dist}}.
+Após propagar as probabilidades, obtemos:
 
 \begin{enumerate}
-
 \item \textbf{Transmissão perfeita}: \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]}
-
-Todas as 3 palavras são transmitidas com sucesso E o "stop" é transmitido:
-
 \begin{displaymath}
-P = 0.95 \times 0.95 \times 0.95 \times 0.90 = 0.7712 = 77.12\%
+P = 0.95 \times 0.95 \times 0.95 \times 0.90 = 0.95^3 \times 0.90 \approx 0.7716 \quad (77.16\%)
 \end{displaymath}
 
-Processamento pela recursão de \ensuremath{\Varid{pcataList}}:
-\begin{itemize}
-    \item \ensuremath{\Varid{h}\;[\mskip1.5mu \mskip1.5mu]}: \ensuremath{\Varid{gene}\;(i_1\;())} $\to$ \ensuremath{\Varid{choose}\;\mathrm{0.9}\;[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]\;[\mskip1.5mu \mskip1.5mu]}
-    \item \ensuremath{\Varid{h}\;[\mskip1.5mu \text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}: \ensuremath{\Varid{choose}\;\mathrm{0.95}\;[\mskip1.5mu \text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]\;[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]} (0.95)
-    \item \ensuremath{\Varid{h}\;[\mskip1.5mu \text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}: \ensuremath{\Varid{choose}\;\mathrm{0.95}\;[\mskip1.5mu \text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]\;[\mskip1.5mu \text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]} (0.95 × 0.95)
-    \item \ensuremath{\Varid{h}\;[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}: resultado final (0.95 × 0.95 × 0.95 × 0.90)
-\end{itemize}
-
-\item \textbf{Falha no "stop"}: \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}
-
-Todas as 3 palavras são transmitidas MAS o "stop" falha (10\%):
-
+\item \textbf{Falta o "stop"}: \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}
 \begin{displaymath}
-P = 0.95 \times 0.95 \times 0.95 \times 0.10 = 0.0857 = 8.57\%
+P = 0.95 \times 0.95 \times 0.95 \times 0.10 = 0.95^3 \times 0.10 \approx 0.0857 \quad (8.57\%)
 \end{displaymath}
-
-Processamento:
-\begin{itemize}
-    \item \ensuremath{\Varid{h}\;[\mskip1.5mu \mskip1.5mu]}: \ensuremath{\Varid{gene}\;(i_1\;())} $\to$ \ensuremath{\Varid{choose}\;\mathrm{0.9}\;[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]\;[\mskip1.5mu \mskip1.5mu]} escolhe \ensuremath{[\mskip1.5mu \mskip1.5mu]} (probabilidade 0.1)
-    \item \ensuremath{\Varid{h}\;[\mskip1.5mu \text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}: obtém \ensuremath{[\mskip1.5mu \mskip1.5mu]}, transmite "hoje" $\to$ \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}
-    \item \ensuremath{\Varid{h}\;[\mskip1.5mu \text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}: obtém \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}, transmite "atacar" $\to$ \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}
-    \item \ensuremath{\Varid{h}\;[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}: obtém \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}, transmite "Vamos" $\to$ \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}
-\end{itemize}
 
 \item \textbf{Perda de "atacar"}: \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]}
-
-Apenas a palavra "atacar" se perde (5\%), as outras transmitem-se (95\% cada):
-
 \begin{displaymath}
-P = 0.95 \times 0.05 \times 0.95 \times 0.90 = 0.0406 = 4.06\%
+P = 0.95 \times 0.05 \times 0.95 \times 0.90 \approx 0.0406 \quad (4.06\%)
 \end{displaymath}
-
-Processamento:
-\begin{itemize}
-    \item \ensuremath{\Varid{h}\;[\mskip1.5mu \mskip1.5mu]}: \ensuremath{\Varid{gene}\;(i_1\;())} $\to$ \ensuremath{\Varid{choose}\;\mathrm{0.9}\;[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]\;[\mskip1.5mu \mskip1.5mu]} escolhe \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]} (probabilidade 0.9)
-    \item \ensuremath{\Varid{h}\;[\mskip1.5mu \text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}: obtém \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 stop\char34}\mskip1.5mu]}, transmite "hoje" $\to$ \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]}
-    \item \ensuremath{\Varid{h}\;[\mskip1.5mu \text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}: obtém \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]}, perde "atacar" $\to$ \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]}
-    \item \ensuremath{\Varid{h}\;[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu]}: obtém \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]}, transmite "Vamos" $\to$ \ensuremath{[\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu]}
-\end{itemize}
-
 \end{enumerate}
 
 \textbf{Testes em Haskell}
@@ -1364,11 +1436,25 @@ Processamento:
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\Varid{transmissao}\mathbin{::}\fun{Dist}\;[\mskip1.5mu \Conid{String}\mskip1.5mu]{}\<[E]%
+\\
 \>[B]{}\Varid{transmissao}\mathrel{=}\Varid{transmitir}\;(\Varid{words}\;\text{\ttfamily \char34 Vamos~atacar~hoje\char34}){}\<[E]%
 \\[\blanklineskip]%
-\>[B]{}\Varid{probPerfecta}\mathrel{=}(\equiv [\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu])\mathbin{??}\Varid{transmissao}{}\<[E]%
+\>[B]{}\mbox{\onelinecomment  Probabilidade de transmissão perfeita}{}\<[E]%
+\\
+\>[B]{}\Varid{probPerfeita}\mathbin{::}\Conid{Probability}{}\<[E]%
+\\
+\>[B]{}\Varid{probPerfeita}\mathrel{=}(\equiv [\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu])\mathbin{??}\Varid{transmissao}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mbox{\onelinecomment  Probabilidade de faltar o "stop"}{}\<[E]%
+\\
+\>[B]{}\Varid{probSemStop}\mathbin{::}\Conid{Probability}{}\<[E]%
 \\
 \>[B]{}\Varid{probSemStop}\mathrel{=}(\equiv [\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 atacar\char34},\text{\ttfamily \char34 hoje\char34}\mskip1.5mu])\mathbin{??}\Varid{transmissao}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mbox{\onelinecomment  Probabilidade de perder "atacar"}{}\<[E]%
+\\
+\>[B]{}\Varid{probPerdaAtacar}\mathbin{::}\Conid{Probability}{}\<[E]%
 \\
 \>[B]{}\Varid{probPerdaAtacar}\mathrel{=}(\equiv [\mskip1.5mu \text{\ttfamily \char34 Vamos\char34},\text{\ttfamily \char34 hoje\char34},\text{\ttfamily \char34 stop\char34}\mskip1.5mu])\mathbin{??}\Varid{transmissao}{}\<[E]%
 \ColumnHook
@@ -1376,72 +1462,10 @@ Processamento:
 
 Resultados esperados:
 \begin{itemize}
-    \item \ensuremath{\Varid{probPerfecta}} $\approx$ 0.7712 (77.12\%)
-    \item \ensuremath{\Varid{probSemStop}} $\approx$ 0.0857 (8.57\%)
-    \item \ensuremath{\Varid{probPerdaAtacar}} $\approx$ 0.0406 (4.06\%)
+    \item \ensuremath{\Varid{probPerfeita}} $\approx 0.7716$
+    \item \ensuremath{\Varid{probSemStop}} $\approx 0.0857$
+    \item \ensuremath{\Varid{probPerdaAtacar}} $\approx 0.0406$
 \end{itemize}
-
-\textbf{Diagrama Explicativo}
-
-O catamorfismo \ensuremath{\Varid{pcataList}} segue o padrão clássico de fold, destruindo a estrutura
-de lista recursivamente e acumulando resultados probabilísticos:
-
-\begin{eqnarray*}
-\xymatrix@C=2cm{
-    \text{Lista } [a] \ar[d]_{\text{out}} \\
-    1 + (a \times \text{Dist } b) \ar[d]^{\text{gene}} \\
-    \text{Dist } b
-}
-\end{eqnarray*}
-
-A recursão processa a lista de trás para a frente:
-
-\begin{eqnarray*}
-\text{pcataList } g \, [a_1, a_2, a_3] &= \\
-g(\text{Right}(a_1, \; g(\text{Right}(a_2, \; g(\text{Right}(a_3, \; g(\text{Left}())))))))
-\end{eqnarray*}
-
-\textbf{Justificação da Solução}
-
-A função \ensuremath{\Varid{gene}} encapsula correctamente o comportamento probabilístico do aparelho:
-
-\begin{enumerate}
-
-\item \textbf{Uso de \ensuremath{\cdot +\cdot }}:
-A soma \ensuremath{()+(\Varid{a},\fun{Dist}\;\Varid{b})} representa:
-\begin{itemize}
-    \item \ensuremath{i_1\;()}: caso base, sem mais elementos
-    \item \ensuremath{i_2\;(\Varid{word},\Varid{distTail})}: elemento actual e distribuição da cauda
-\end{itemize}
-
-\item \textbf{Composição monádica}:
-A expressão \ensuremath{\Varid{distTail}\bind \lambda \Varid{tail}\to \mathbin{...}} garante que:
-\begin{itemize}
-    \item Cada resultado possível de \ensuremath{\Varid{distTail}} é processado
-    \item As probabilidades são multiplicadas automaticamente pelo mónade
-    \item A semântica é intuitiva e composicional
-\end{itemize}
-
-\item \textbf{Independência probabilística}:
-As falhas de cada palavra e do "stop" são modeladas como eventos independentes.
-A função \ensuremath{\Varid{choose}} multiplica as probabilidades correctamente.
-
-\item \textbf{Catamorfismo genérico}:
-\ensuremath{\Varid{pcataList}} é um catamorfismo que funciona com qualquer gene \ensuremath{\Varid{g}\mathbin{::}()+(\Varid{a},\fun{Dist}\;\Varid{b})\to \fun{Dist}\;\Varid{b}}.
-O gene \ensuremath{\Varid{gene}} especializa-o para transmissão de mensagens.
-
-\item \textbf{Laziness em Haskell}:
-A definição recursiva funciona graças à avaliação preguiçosa (lazy evaluation) de Haskell.
-As distribuições infinitas são tratadas de forma transparente.
-
-\item \textbf{Definição de transmitir}:
-A função \ensuremath{\Varid{transmitir}\mathrel{=}\Varid{pcataList}\;\Varid{gene}} (definida na linha 383) compõe o catamorfismo
-genérico com o gene específico para este problema, obtendo a solução desejada.
-
-\end{enumerate}
-
-A solução mostra como padrões funcionais clássicos (catamorfismos) podem ser elevados
-a contextos probabilísticos, mantendo a elegância e composicionalidade do código.
 
 %----------------- Índice remissivo (exige makeindex) -------------------------%
 

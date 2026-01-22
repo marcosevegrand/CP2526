@@ -126,8 +126,8 @@
 %====== DEFINIR GRUPO E ELEMENTOS =============================================%
 
 \group{G99}
-\studentA{106807}{Marco Sèvegrand}
-\studentB{xxxxxx}{Nome }
+\studentA{106807}{Marco Sèvegrand }
+\studentB{107372}{Nuno Rebelo }
 \studentC{xxxxxx}{Nome }
 
 %==============================================================================%
@@ -664,6 +664,8 @@ que sejam necessárias.
 \noindent
 \textbf{Importante}: Não pode ser alterado o texto deste ficheiro fora deste anexo.
 
+%--------------------------- PROBLEMA 1 -----------------------------------------%
+
 \subsection*{Problema 1}
 
 Uma travessia em largura (breadth-first) de uma árvore processa os nós nível por nível,
@@ -678,7 +680,7 @@ lista, obtendo o resultado breadth-first.
 
 Embora o resultado final seja breadth-first, o catamorfismo processa internamente a árvore de baixo
 para cima (visitando primeiro as subárvores). Quando chegamos a um nó, temos já processadas
-as subárvores esquerda e direita, recebendo listas de níveis para cada uma. O nó atual forma um novo
+as subárvores esquerda e direita, recebendo listas de níveis para cada uma. O nó actual forma um novo
 nível no topo, e os restantes níveis são fundidos par a par através de |zipLevels|, alinhando elementos
 da mesma profundidade das duas subárvores.
 
@@ -697,13 +699,13 @@ Diagrama e Propriedades:
 
 Catamorfismo |levels|:
 \begin{eqnarray*}
-\xymatrix@@C=2cm{
+\xymatrix@@C=1.5cm{
     |BTree a|
            \ar[d]_-{|levels|}
 &
     |1 + a >< (BTree a >< BTree a)|
            \ar[d]^{|id + id >< (levels >< levels)|}
-           \ar[l]_-{|outBTree|}
+           \ar[l]_-{in_{BTree}}
 \\
      |[[a]]|
 &
@@ -712,7 +714,7 @@ Catamorfismo |levels|:
 }
 \end{eqnarray*}
 
-O diagrama mostra como |levels| decompõe a árvore (via |outBTree|),
+O diagrama mostra como |levels| decompõe a árvore (via $\mathtt{in_{BTree}}$),
 aplica |levels| recursivamente às subárvores,
 e depois combina o resultado usando |glevels|.
 O gene |glevels| trata dois casos: árvore vazia (retorna lista vazia)
@@ -732,7 +734,6 @@ os nós exactamente na ordem breadth-first: primeiro todos os nós do nível 0 (
 depois nível 2, e assim sucessivamente.
 
 Implementação:
-
 \begin{code}
 bft t = anaList gbf [t]
   where
@@ -745,34 +746,35 @@ Diagrama e Propriedades:
 
 Anamorfismo |bft|:
 \begin{eqnarray*}
-\xymatrix@@C=2cm{
+\xymatrix@@C=1.5cm{
     |[BTree a]|
-           \ar[d]_-{|anaList gbf|}
+           \ar[d]_-{|bft|}
+           \ar[r]^-{|gbf|}
 &
     |1 + a >< [BTree a]|
            \ar[d]^{|id + id >< anaList gbf|}
-           \ar[l]_-{|gbf|}
 \\
      |[a]|
 &
      |1 + a >< [a]|
-           \ar[l]^-{|inList|}
+           \ar[l]^-{in_{List}}
 }
 \end{eqnarray*}
 
 O gene |gbf| define o passo de construção da lista. A fila de árvores é consumida por três casos:
 se está vazia, o processo termina (|Left ()|); se contém uma árvore vazia, ignoramo-la recursivamente;
 se contém um nó, emitimos o seu valor e continuamos com os restantes elementos da fila mais os seus filhos.
-A operação |ts ++ [l, r]| é essencial: coloca os filhos no fim, não no início, mantendo a ordem breadth-first.
+A operação |ts ++ [l, r]| coloca os filhos no fim, não no início, mantendo a ordem breadth-first.
+
+%--------------------------- PROBLEMA 2 -----------------------------------------%
 
 \subsection*{Problema 2}
 
-O objetivo deste problema é derivar a implementação da função seno hiperbólico ($\sinh x$)
+O objectivo deste problema é derivar a implementação da função seno hiperbólico ($\sinh x$)
 a partir da sua série de Taylor, utilizando a lei da recursividade mútua e catamorfismos de números naturais.
 
 \textbf{A série de Taylor para $\sinh x$}
 
-A série de Taylor do seno hiperbólico é:
 \begin{displaymath}
 \sinh x = \sum_{n=0}^{\infty} \frac{x^{2n+1}}{(2n+1)!} = x + \frac{x^3}{3!} + \frac{x^5}{5!} + \cdots
 \end{displaymath}
@@ -785,8 +787,8 @@ e usamos um catamorfismo de números naturais para repetir este processo $n$ vez
 O estado é representado por um vector de cinco componentes |[s, h, k, j, m]|:
 \begin{itemize}
     \item |s|: Soma acumulada dos termos da série.
-    \item |h|: Numerador do termo actual ($x^{2n+1}$).
-    \item |k|: Denominador do termo actual ($(2n+1)!$).
+    \item |h|: Numerador do termo atual ($x^{2n+1}$).
+    \item |k|: Denominador do termo atual ($(2n+1)!$).
     \item |j|: Produto dos dois próximos factores da sequência de denominadores.
     \item |m|: Incremento linear para |j|.
 \end{itemize}
@@ -809,23 +811,21 @@ Implementação:
 f_sinh :: Double -> Int -> Double
 f_sinh x n = head (worker n)
   where
-    worker = cataNat (either (const (start x)) (loop x))
-
-    loop x state = case state of
-      [s, h, k, j, m] -> [h / k + s, x^2 * h, k * j, j + m, m + 8]
-
+    worker = cataNat gene
+    gene = either (const (start x)) (loop x)
+    loop x [s, h, k, j, m] = [h / k + s, x^2 * h, k * j, j + m, m + 8]
     start x = [x, x^3, 6, 20, 22]
 \end{code}
 
 Diagrama do catamorfismo:
 \begin{eqnarray*}
-\xymatrix@@C=2cm{
+\xymatrix@@C=1.5cm{
     |Nat0|
            \ar[d]_-{|worker|}
 &
     |1 + Nat0|
            \ar[d]^{|id + worker|}
-           \ar[l]_-{|inNat|}
+           \ar[l]_-{in_{Nat}}
 \\
      |[Double]|
 &
@@ -839,307 +839,311 @@ A função |gene| trata dois casos: para o caso base (zero), retorna o estado in
 aplica |loop x| ao estado resultante da iteração anterior. Por fim, |head| extrai o primeiro componente
 do vector final, que é a soma acumulada |s|.
 
-\textbf{Justificação matemática}
-
-A série de $\sinh x$ converge rapidamente. A relação entre termos consecutivos é:
-\begin{displaymath}
-\frac{t_{n+1}}{t_n} = \frac{x^2}{(2n+2)(2n+3)}
-\end{displaymath}
-
-Esta razão decrescente garante que, após um número finito de iterações, os novos termos contribuem
-negligenciavelmente para a soma, permitindo uma aproximação numérica precisa de $\sinh x$.
+%--------------------------- PROBLEMA 3 -----------------------------------------%
 
 \subsection*{Problema 3}
 
-O problema do fair-merge de duas sequências infinitas (Streams) descreve uma situação de alternância
-perfeita entre dois fluxos de dados, como observado no tráfego onde cada carro de uma via deixa passar
-um carro da outra via. O objetivo é definir esta operação como um anamorfismo de Streams,
-utilizando a lei dual da recursividade mútua.
+O problema do fair-merge consiste em intercalar duas sequências infinitas (streams)
+de forma alternada: um elemento da primeira, um da segunda, um da primeira, etc.
+O objectivo é expressar a função |fair_merge| como um anamorfismo de streams,
+derivando o gene a partir da lei dual da recursividade mútua.
 
-\textbf{A lei dual da recursividade mútua}
+\textbf{Ponto de partida: a definição dada}
 
-A propriedade universal de um anamorfismo estabelece que uma função |either f g| pode ser expressa
-como um anamorfismo quando o seu comportamento externo segue uma certa estrutura. Para streams,
-a lei dual da recursividade mútua afirma:
+A função |fair_merge| é definida por duas funções mutuamente recursivas:
+\begin{code}
+h (Cons(x,xs), y) = Cons(x, k(xs,y))
+k (x, Cons(y,ys)) = Cons(y, h(x,ys))
+\end{code}
+onde |h| extrai do primeiro stream e |k| extrai do segundo, alternando entre si.
 
+A função final é |fair_merge = either h k|, que escolhe entre começar por |h| ou |k|
+conforme o argumento seja |Left| ou |Right|.
+
+\textbf{Derivação da lei dual da recursividade mútua}
+
+Queremos encontrar um gene |g| tal que |either h k = anaStream g|.
+Partindo da propriedade universal dos anamorfismos:
 \begin{eqnarray*}
 \start
-    |either f g = anaStream (either h k)|
-\just\equiv{ propriedade universal }
-    |outStream . either f g = (id >< (either f g)) . (either h k)|
-\just\equiv{ fusão de somas }
+    |f = anaStream g|
+\just\equiv{ universal-ana (56) }
+    |outStream . f = (id >< f) . g|
+\end{eqnarray*}
+
+Aplicando a |f = either h k| e |g = either gh gk|:
+\begin{eqnarray*}
+\start
+    |either h k = anaStream (either gh gk)|
+\just\equiv{ universal-ana (56) }
+    |outStream . (either h k) = (id >< (either h k)) . (either gh gk)|
+\just\equiv{ fusão-+ (21) }
+    |either (outStream . h) (outStream . k) = either ((id >< (either h k)) . gh) ((id >< (either h k)) . gk)|
+\just\equiv{ eq-+ (28) }
 |
     lcbr(
-       outStream . f = (id >< (either f g)) . h
+       outStream . h = (id >< (either h k)) . gh
     )(
-       outStream . g = (id >< (either f g)) . k
+       outStream . k = (id >< (either h k)) . gk
     )
 |
 \qed
 \end{eqnarray*}
 
-Esta lei permite-nos derivar o gene do anamorfismo a partir de duas funções mutuamente recursivas.
+Esta é a \textbf{lei dual da recursividade mútua}: permite derivar os genes |gh| e |gk|
+a partir das funções mutuamente recursivas |h| e |k|.
 
 \textbf{Aplicação ao fair-merge}
 
-O fair-merge alterna entre dois fluxos. As funções |h| e |k| que descrevem este comportamento são:
-\begin{itemize}
-    \item |h (Cons(x,xs), y) = Cons(x, k(xs,y))|: extrai |x| do primeiro fluxo e passa para |k|.
-    \item |k (x, Cons(y,ys)) = Cons(y, h(x,ys))|: extrai |y| do segundo fluxo e passa para |h|.
-\end{itemize}
+Calculemos |outStream . h| e |outStream . k|:
+\begin{eqnarray*}
+\start
+|outStream . h (Cons(x,xs), y)|
+\just={definição de |h|}
+|outStream (Cons(x, k(xs,y)))|
+\just={definição de |outStream|}
+|(x, k(xs,y))|
+\just={cancelamento-+ (19)}
+|(x, (either h k) (Right (xs,y)))|
+\just={def-× (79)}
+|(id >< (either h k)) (x, Right (xs,y))|
+\qed
+\end{eqnarray*}
 
-Aplicando |outStream| (que satisfaz |outStream (Cons(a,as)) = (a,as)|):
-\begin{itemize}
-    \item |outStream . h(Cons(x,xs), y) = (x, k(xs,y))|
-    \item |outStream . k(x, Cons(y,ys)) = (y, h(x,ys))|
-\end{itemize}
+Portanto, |gh (Cons(x,xs), y) = (x, Right (xs,y))|.
 
-Para construir o gene, utilizamos o isomorfismo |Either| para alternar entre os dois estados:
-\begin{itemize}
-    \item Quando o gene recebe |Left|, extrai de |h| e retorna o resultado encapsulado em |Right|.
-    \item Quando o gene recebe |Right|, extrai de |k| e retorna o resultado encapsulado em |Left|.
-\end{itemize}
+Analogamente para |k|:
+\begin{eqnarray*}
+\start
+|outStream . k (x, Cons(y,ys))|
+\just={definição de |k|}
+|outStream (Cons(y, h(x,ys)))|
+\just={definição de |outStream|}
+|(y, h(x,ys))|
+\just={cancelamento-+ (19)}
+|(y, (either h k) (Left (x,ys)))|
+\just={def-× (79)}
+|(id >< (either h k)) (y, Left (x,ys))|
+\qed
+\end{eqnarray*}
 
-O gene implementa assim a alternância definida por |h| e |k|:
-\begin{itemize}
-    \item |gene (Left (Cons(x,xs), y)) = (x, Right (xs,y))|
-    \item |gene (Right (x, Cons(y,ys))) = (y, Left (x,ys))|
-\end{itemize}
+Portanto, |gk (x, Cons(y,ys)) = (y, Left (x,ys))|.
 
-Implementação:
+\textbf{O gene do anamorfismo}
+
+Combinando |gh| e |gk| num único gene |gene = either gh gk|:
+\begin{eqnarray*}
+    |gene (Left  (Cons(x,xs), y))| &=& |(x, Right (xs, y))| \\
+    |gene (Right (x, Cons(y,ys)))| &=& |(y, Left  (x, ys))|
+\end{eqnarray*}
+
+O gene extrai um elemento do stream apropriado e \emph{troca o lado do Either}
+para garantir a alternância no passo seguinte.
+
+\textbf{Implementação}
+
 \begin{code}
+fair_merge' :: Either (Stream a, Stream a) (Stream a, Stream a) -> Stream a
 fair_merge' = anaStream gene
   where
-    gene (Left (Cons (x, xs), y)) = (x, Right (xs, y))
-    gene (Right (x, Cons (y, ys))) = (y, Left (x, ys))
+    gene (Left  (Cons (x, xs), y)) = (x, Right (xs, y))
+    gene (Right (x, Cons (y, ys))) = (y, Left  (x, ys))
 \end{code}
 
-Diagrama do anamorfismo:
+\textbf{Diagrama do anamorfismo}
+
 \begin{eqnarray*}
-\xymatrix@@C=2cm{
-    |Either (Stream a, Stream a) (Stream a, Stream a)|
+\xymatrix@@C=1.5cm{
+    |(S, S) + (S, S)|
            \ar[d]_-{|fair_merge'|}
            \ar[r]^-{|gene|}
 &
-    |a >< Either (Stream a, Stream a) (Stream a, Stream a)|
+    |a >< ((S, S) + (S, S))|
            \ar[d]^{|id >< fair_merge'|}
 \\
-    |Stream a|
+    |S|
 &
-    |a >< Stream a|
+    |a >< S|
            \ar[l]^-{|Cons|}
 }
 \end{eqnarray*}
+\begin{center}
+onde |S = Stream a|
+\end{center}
 
-O diagrama ilustra o passo do anamorfismo: o estado inicial é uma soma (escolha entre dois modos).
-O gene |gene| processa este estado, extrai um elemento e produz um novo estado alternado.
-O anamorfismo constrói iterativamente a stream final, preservando a alternância garantida pelo gene.
+O anamorfismo constrói a stream resultado aplicando repetidamente o gene:
+cada aplicação extrai um elemento e produz um novo estado com o Either invertido,
+garantindo a alternância perfeita entre os dois streams de entrada.
 
-\textbf{Funcionamento}
 
-Cada aplicação de |gene| extrai um elemento de um dos fluxos e inverte a escolha (via |Either|)
-para o próximo passo, garantindo assim que os elementos são consumidos alternadamente dos dois
-fluxos de entrada. Esta é a essência do fair-merge civilizado observado no problema do tráfego.
+%--------------------------- PROBLEMA 4 -----------------------------------------%
 
 \subsection*{Problema 4}
 
-Este problema envolve catamorfismos probabilísticos aplicados a um cenário de
-transmissão de mensagens com falhas.
+O problema consiste em modelar a transmissão de uma mensagem através de um aparelho
+de telegrafia com falhas probabilísticas, usando um catamorfismo probabilístico.
 
-\textbf{Análise do Problema}
+\textbf{Especificação do problema}
 
-Uma unidade militar pretende enviar a mensagem |words "Vamos atacar hoje"| através de um
-aparelho de telegrafia com falhas probabilísticas:
+A mensagem a transmitir é |words "Vamos atacar hoje" = ["Vamos", "atacar", "hoje"]|.
+O aparelho tem o seguinte comportamento:
 \begin{itemize}
-    \item Cada palavra tem $5\%$ de probabilidade de se perder (95\% de sucesso)
-    \item O código "stop" final tem $10\%$ de probabilidade de falha (90\% de sucesso)
+    \item Cada palavra tem 5\% de probabilidade de se perder (95\% de sucesso)
+    \item No final, o aparelho envia |"stop"|, mas falha 10\% das vezes (90\% de sucesso)
 \end{itemize}
 
-\textbf{Catamorfismo Probabilístico}
+Queremos encontrar |gene| tal que |transmitir = pcataList gene| descreva este comportamento.
 
-O catamorfismo |pcataList| processa listas de forma recursiva com comportamento probabilístico.
-A assinatura de tipo e implementação já foram definidas anteriormente:
+\textbf{Análise do catamorfismo probabilístico}
 
+O combinador |pcataList| é a versão probabilística de |cataList|:
 \begin{code}
 pcataList g = h
   where
-    h [] = g (Left ())
+    h []     = g (Left ())
     h (x:xs) = h xs >>= \r -> g (Right (x, r))
 \end{code}
 
-Este combinador é semelhante a |foldr| da biblioteca |List|, mas o gene é uma função
-probabilística que retorna distribuições.
+A diferença fundamental é que o gene |g| retorna uma distribuição |Dist b|,
+e a composição usa o operador monádico |>>=| para propagar as probabilidades.
 
-\textbf{Implementação do Gene}
+A recursão processa a lista da direita para a esquerda:
+\begin{displaymath}
+h\,[a_1, a_2, a_3] = h\,[a_2, a_3] \bind (\lambda r \to g\,(\text{Right}\,(a_1, r)))
+\end{displaymath}
 
-O gene descreve como processar cada elemento da lista recursivamente:
+Isto significa que |r| representa o resultado (já probabilístico) da transmissão
+da cauda da lista, e o gene decide se adiciona ou não o elemento actual.
+
+\textbf{Derivação do gene}
+
+O gene tem tipo |Either () (String, [String]) -> Dist [String]| e deve tratar dois casos:
+
+\emph{Caso base} — |gene (Left ())|:
+
+Não há mais palavras. O aparelho tenta enviar |"stop"|:
+\begin{itemize}
+    \item Com probabilidade 0.9: sucesso, retorna |["stop"]|
+    \item Com probabilidade 0.1: falha, retorna |[]|
+\end{itemize}
+
+\emph{Caso recursivo} — |gene (Right (palavra, resto))|:
+
+Recebe a palavra actual e |resto|, que é o resultado da transmissão da cauda.
+O aparelho tenta enviar a palavra:
+\begin{itemize}
+    \item Com probabilidade 0.95: sucesso, retorna |palavra : resto|
+    \item Com probabilidade 0.05: falha, retorna |resto| (palavra perdida)
+\end{itemize}
+
+\textbf{Implementação}
 
 \begin{code}
 gene :: Either () (String, [String]) -> Dist [String]
-gene (Left ())           = choose 0.9 ["stop"] []
-gene (Right (w, tail))   = choose 0.95 (w:tail) tail
+gene (Left ())                = choose 0.9  ["stop"]         []
+gene (Right (palavra, resto)) = choose 0.95 (palavra : resto) resto
 \end{code}
 
-\textbf{Explicação Detalhada do Gene}
+\textbf{Diagrama do catamorfismo probabilístico}
 
-O gene tem dois casos correspondentes à estrutura de soma |Either|:
+\begin{eqnarray*}
+\xymatrix@@C=1.5cm{
+    |[String]|
+           \ar[d]_-{|pcataList gene|}
+&
+    |1 + String >< [String]|
+           \ar[d]^{|id + id >< pcataList gene|}
+           \ar[l]_-{in_{List}}
+\\
+    |Dist [String]|
+&
+    |1 + String >< Dist [String]|
+           \ar[l]^-{|gene'|}
+}
+\end{eqnarray*}
 
-\begin{enumerate}
-\item \textbf{Caso base} |gene (Left ())|:
+onde |gene' = either (gene . i1) (\(a,d) -> d >>= \r -> gene (i2 (a,r)))|
+combina o gene com a propagação monádica das probabilidades.
 
-Quando não há mais palavras, o aparelho tenta enviar "stop":
+\textbf{Verificação: cálculo manual das probabilidades}
+
+Seja |msg = ["Vamos", "atacar", "hoje"]|. Calculemos |pcataList gene msg|:
+
+\emph{Passo 1} — |h [] = gene (Left ()) = choose 0.9 ["stop"] []|
+
+Distribuição inicial:
+\begin{displaymath}
+D_0 = \left\{ \begin{array}{ll} \text{|["stop"]|} & \text{com prob. } 0.9 \\ \text{|[]|}  & \text{com prob. } 0.1 \end{array} \right.
+\end{displaymath}
+
+\emph{Passo 2} — |h ["hoje"] = h [] >>= \r -> gene (Right ("hoje", r))|
+
+Para cada resultado |r| de $D_0$, aplicamos |gene (Right ("hoje", r))|:
 \begin{itemize}
-    \item Com probabilidade $90\%$: envia |["stop"]| com sucesso
-    \item Com probabilidade $10\%$: falha e retorna |[]| (nada enviado)
+    \item |r = ["stop"]|: |choose 0.95 ["hoje","stop"] ["stop"]|
+    \item |r = []|: |choose 0.95 ["hoje"] []|
 \end{itemize}
 
-\item \textbf{Caso recursivo} |gene (Right (word, distTail))|:
+Distribuição após "hoje":
+\begin{displaymath}
+D_1 = \left\{ \begin{array}{lll}
+\text{|["hoje","stop"]|} & 0.9 \times 0.95 &= 0.855 \\
+\text{|["stop"]|}        & 0.9 \times 0.05 &= 0.045 \\
+\text{|["hoje"]|}        & 0.1 \times 0.95 &= 0.095 \\
+\text{|[]|}              & 0.1 \times 0.05 &= 0.005
+\end{array} \right.
+\end{displaymath}
 
-Recebe uma palavra e uma distribuição de probabilidade da cauda já processada.
-A composição monádica |distTail >>= \tail -> ...| garante que:
-\begin{itemize}
-    \item Para cada possível resultado |tail| da cauda
-    \item Com probabilidade $95\%$: a palavra é transmitida, retorna |word:tail|
-    \item Com probabilidade $5\%$: a palavra se perde, retorna apenas |tail|
-\end{itemize}
+\emph{Passo 3} — |h ["atacar","hoje"]|: análogo, multiplica cada linha por 0.95 (sucesso) ou 0.05 (falha).
 
-\end{enumerate}
+\emph{Passo 4} — |h ["Vamos","atacar","hoje"]|: idem.
 
-\textbf{Análise Probabilística para} |["Vamos", "atacar", "hoje"]|
+\textbf{Resultados finais}
 
-Cada resultado final é formado pelas decisões independentes de transmissão de cada
-palavra e do "stop". As probabilidades multiplicam-se conforme a semântica do mónade |Dist|.
+Após propagar as probabilidades, obtemos:
 
 \begin{enumerate}
-
 \item \textbf{Transmissão perfeita}: |["Vamos","atacar","hoje","stop"]|
-
-Todas as 3 palavras são transmitidas com sucesso E o "stop" é transmitido:
-
 \begin{displaymath}
-P = 0.95 \times 0.95 \times 0.95 \times 0.90 = 0.7712 = 77.12\%
+P = 0.95 \times 0.95 \times 0.95 \times 0.90 = 0.95^3 \times 0.90 \approx 0.7716 \quad (77.16\%)
 \end{displaymath}
 
-Processamento pela recursão de |pcataList|:
-\begin{itemize}
-    \item |h []|: |gene (Left ())| $\to$ |choose 0.9 ["stop"] []|
-    \item |h ["hoje"]|: |choose 0.95 ["hoje","stop"] ["stop"]| (0.95)
-    \item |h ["atacar","hoje"]|: |choose 0.95 ["atacar","hoje","stop"] ["hoje","stop"]| (0.95 × 0.95)
-    \item |h ["Vamos","atacar","hoje"]|: resultado final (0.95 × 0.95 × 0.95 × 0.90)
-\end{itemize}
-
-\item \textbf{Falha no "stop"}: |["Vamos","atacar","hoje"]|
-
-Todas as 3 palavras são transmitidas MAS o "stop" falha (10\%):
-
+\item \textbf{Falta o "stop"}: |["Vamos","atacar","hoje"]|
 \begin{displaymath}
-P = 0.95 \times 0.95 \times 0.95 \times 0.10 = 0.0857 = 8.57\%
+P = 0.95 \times 0.95 \times 0.95 \times 0.10 = 0.95^3 \times 0.10 \approx 0.0857 \quad (8.57\%)
 \end{displaymath}
-
-Processamento:
-\begin{itemize}
-    \item |h []|: |gene (Left ())| $\to$ |choose 0.9 ["stop"] []| escolhe |[]| (probabilidade 0.1)
-    \item |h ["hoje"]|: obtém |[]|, transmite "hoje" $\to$ |["hoje"]|
-    \item |h ["atacar","hoje"]|: obtém |["hoje"]|, transmite "atacar" $\to$ |["atacar","hoje"]|
-    \item |h ["Vamos","atacar","hoje"]|: obtém |["atacar","hoje"]|, transmite "Vamos" $\to$ |["Vamos","atacar","hoje"]|
-\end{itemize}
 
 \item \textbf{Perda de "atacar"}: |["Vamos","hoje","stop"]|
-
-Apenas a palavra "atacar" se perde (5\%), as outras transmitem-se (95\% cada):
-
 \begin{displaymath}
-P = 0.95 \times 0.05 \times 0.95 \times 0.90 = 0.0406 = 4.06\%
+P = 0.95 \times 0.05 \times 0.95 \times 0.90 \approx 0.0406 \quad (4.06\%)
 \end{displaymath}
-
-Processamento:
-\begin{itemize}
-    \item |h []|: |gene (Left ())| $\to$ |choose 0.9 ["stop"] []| escolhe |["stop"]| (probabilidade 0.9)
-    \item |h ["hoje"]|: obtém |["stop"]|, transmite "hoje" $\to$ |["hoje","stop"]|
-    \item |h ["atacar","hoje"]|: obtém |["hoje","stop"]|, perde "atacar" $\to$ |["hoje","stop"]|
-    \item |h ["Vamos","atacar","hoje"]|: obtém |["hoje","stop"]|, transmite "Vamos" $\to$ |["Vamos","hoje","stop"]|
-\end{itemize}
-
 \end{enumerate}
 
 \textbf{Testes em Haskell}
 
 \begin{code}
+transmissao :: Dist [String]
 transmissao = transmitir (words "Vamos atacar hoje")
 
-probPerfecta = (== ["Vamos","atacar","hoje","stop"]) ?? transmissao
+-- Probabilidade de transmissão perfeita
+probPerfeita :: Probability
+probPerfeita = (== ["Vamos","atacar","hoje","stop"]) ?? transmissao
+
+-- Probabilidade de faltar o "stop"
+probSemStop :: Probability
 probSemStop = (== ["Vamos","atacar","hoje"]) ?? transmissao
+
+-- Probabilidade de perder "atacar"
+probPerdaAtacar :: Probability
 probPerdaAtacar = (== ["Vamos","hoje","stop"]) ?? transmissao
 \end{code}
 
 Resultados esperados:
 \begin{itemize}
-    \item |probPerfecta| $\approx$ 0.7712 (77.12\%)
-    \item |probSemStop| $\approx$ 0.0857 (8.57\%)
-    \item |probPerdaAtacar| $\approx$ 0.0406 (4.06\%)
+    \item |probPerfeita| $\approx 0.7716$
+    \item |probSemStop| $\approx 0.0857$
+    \item |probPerdaAtacar| $\approx 0.0406$
 \end{itemize}
-
-\textbf{Diagrama Explicativo}
-
-O catamorfismo |pcataList| segue o padrão clássico de fold, destruindo a estrutura
-de lista recursivamente e acumulando resultados probabilísticos:
-
-\begin{eqnarray*}
-\xymatrix@@C=2cm{
-    \text{Lista } [a] \ar[d]_{\text{out}} \\
-    1 + (a \times \text{Dist } b) \ar[d]^{\text{gene}} \\
-    \text{Dist } b
-}
-\end{eqnarray*}
-
-A recursão processa a lista de trás para a frente:
-
-\begin{eqnarray*}
-\text{pcataList } g \, [a_1, a_2, a_3] &= \\
-g(\text{Right}(a_1, \; g(\text{Right}(a_2, \; g(\text{Right}(a_3, \; g(\text{Left}())))))))
-\end{eqnarray*}
-
-\textbf{Justificação da Solução}
-
-A função |gene| encapsula correctamente o comportamento probabilístico do aparelho:
-
-\begin{enumerate}
-
-\item \textbf{Uso de |Either|}:
-A soma |Either () (a, Dist b)| representa:
-\begin{itemize}
-    \item |Left ()|: caso base, sem mais elementos
-    \item |Right (word, distTail)|: elemento actual e distribuição da cauda
-\end{itemize}
-
-\item \textbf{Composição monádica}:
-A expressão |distTail >>= \tail -> ...| garante que:
-\begin{itemize}
-    \item Cada resultado possível de |distTail| é processado
-    \item As probabilidades são multiplicadas automaticamente pelo mónade
-    \item A semântica é intuitiva e composicional
-\end{itemize}
-
-\item \textbf{Independência probabilística}:
-As falhas de cada palavra e do "stop" são modeladas como eventos independentes.
-A função |choose| multiplica as probabilidades correctamente.
-
-\item \textbf{Catamorfismo genérico}:
-|pcataList| é um catamorfismo que funciona com qualquer gene |g :: Either () (a, Dist b) -> Dist b|.
-O gene |gene| especializa-o para transmissão de mensagens.
-
-\item \textbf{Laziness em Haskell}:
-A definição recursiva funciona graças à avaliação preguiçosa (lazy evaluation) de Haskell.
-As distribuições infinitas são tratadas de forma transparente.
-
-\item \textbf{Definição de transmitir}:
-A função |transmitir = pcataList gene| (definida na linha 383) compõe o catamorfismo
-genérico com o gene específico para este problema, obtendo a solução desejada.
-
-\end{enumerate}
-
-A solução mostra como padrões funcionais clássicos (catamorfismos) podem ser elevados
-a contextos probabilísticos, mantendo a elegância e composicionalidade do código.
 
 %----------------- Índice remissivo (exige makeindex) -------------------------%
 
