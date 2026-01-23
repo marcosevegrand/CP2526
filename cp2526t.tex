@@ -268,10 +268,10 @@
 
 %====== DEFINIR GRUPO E ELEMENTOS =============================================%
 
-\group{G99}
-\studentA{106807}{Marco Sèvegrand }
-\studentB{107372}{Nuno Rebelo }
-\studentC{xxxxxx}{Nome }
+\group{G18}
+\studentA{106807}{Marco Rafael Vieira Sèvegrand }
+\studentB{107372}{Nuno Henrique Macedo Rebelo }
+\studentC{107326}{Guilherme Santos da Costa }
 
 %==============================================================================%
 
@@ -914,7 +914,7 @@ as subárvores esquerda e direita, recebendo listas de níveis para cada uma. O 
 nível no topo, e os restantes níveis são fundidos par a par através de \ensuremath{\Varid{zipLevels}}, alinhando elementos
 da mesma profundidade das duas subárvores.
 
-Implementação:
+\textbf{Implementação}
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{3}{@{}>{\hspre}l<{\hspost}@{}}%
@@ -940,7 +940,7 @@ Implementação:
 \ColumnHook
 \end{hscode}\resethooks
 
-Diagrama e Propriedades:
+\textbf{Diagrama do catamorfismo}
 
 Catamorfismo \ensuremath{\Varid{levels}}:
 \begin{eqnarray*}
@@ -978,7 +978,7 @@ os seus filhos no \emph{fim} da fila. Este regime FIFO (first-in-first-out) gara
 os nós exactamente na ordem breadth-first: primeiro todos os nós do nível 0 (raiz), depois nível 1,
 depois nível 2, e assim sucessivamente.
 
-Implementação:
+\textbf{Implementação}
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{3}{@{}>{\hspre}l<{\hspost}@{}}%
@@ -1000,7 +1000,7 @@ Implementação:
 \ColumnHook
 \end{hscode}\resethooks
 
-Diagrama e Propriedades:
+\textbf{Diagrama do anamorfismo}
 
 Anamorfismo \ensuremath{\Varid{bft}}:
 \begin{eqnarray*}
@@ -1053,7 +1053,7 @@ O estado é representado por um vector de cinco componentes \ensuremath{[\mskip1
 
 A transição de um estado para o seguinte é dada pela função \ensuremath{\Varid{loop}}:
 \begin{displaymath}
-\text{novo estado} = \left[ \frac{h}{k} + s, \, x^2 h, \, k j, \, j + m, \, m + 8 \right]
+\text{novo estado} = \left[ \frac{h}{k} + s, \, x^2 * h, \, k * j, \, j + m, \, m + 8 \right]
 \end{displaymath}
 
 Estado inicial para $n = 0$:
@@ -1064,7 +1064,35 @@ Estado inicial para $n = 0$:
 Este estado inicial contém já o primeiro termo da série (\ensuremath{\Varid{s}\mathrel{=}\Varid{x}}) e prepara o cálculo do segundo termo
 (com \ensuremath{\Varid{h}\mathrel{=}\Varid{x}\mathbin{\uparrow}\mathrm{3}} e \ensuremath{\Varid{k}\mathrel{=}\mathrm{6}\mathrel{=}\mathrm{3}\mathbin{!}}).
 
-Implementação:
+\textbf{Exemplo de iterações para $x = 2$}
+
+A tabela seguinte mostra a evolução do estado ao longo das primeiras iterações:
+
+\begin{center}
+\begin{tabular}{cccccc}
+\hline
+$n$ & $s$ & $h$ & $k$ & $j$ & $m$ \\
+\hline
+0 & 2.000000 & 8 & 6 & 20 & 22 \\
+1 & 3.333333 & 32 & 120 & 42 & 30 \\
+2 & 3.600000 & 128 & 5040 & 72 & 38 \\
+3 & 3.625397 & 512 & 362880 & 110 & 46 \\
+4 & 3.626808 & 2048 & 39916800 & 156 & 54 \\
+5 & 3.626859 & 8192 & $6.23 \times 10^9$ & 210 & 62 \\
+\hline
+\end{tabular}
+\end{center}
+
+Observa-se que:
+\begin{itemize}
+    \item O valor de $s$ converge rapidamente para $\sinh(2) \approx 3.626860$.
+    \item O numerador $h$ cresce como potências de $x^2 = 4$: $8 \to 32 \to 128 \to 512 \to \cdots$ (correspondendo a $2^3, 2^5, 2^7, \ldots$).
+    \item O denominador $k$ cresce factorialmente: $6 \to 120 \to 5040 \to \cdots$ (correspondendo a $3!, 5!, 7!, \ldots$).
+    \item Os valores $j$ e $m$ seguem progressões que garantem a multiplicação correta dos factoriais sucessivos.
+\end{itemize}
+
+\textbf{Implementação}
+
 \begin{hscode}\SaveRestoreHook
 \column{B}{@{}>{\hspre}l<{\hspost}@{}}%
 \column{3}{@{}>{\hspre}l<{\hspost}@{}}%
@@ -1091,7 +1119,8 @@ Implementação:
 \ColumnHook
 \end{hscode}\resethooks
 
-Diagrama do catamorfismo:
+\textbf{Diagrama do catamorfismo}
+
 \begin{eqnarray*}
 \xymatrix@C=1.5cm{
     \ensuremath{\N_0}
@@ -1162,7 +1191,7 @@ Aplicando a \ensuremath{\Varid{f}\mathrel{=}\alt{\Varid{h}}{\Varid{k}}} e \ensur
 \qed
 \end{eqnarray*}
 
-Esta é a \textbf{lei dual da recursividade mútua}: permite derivar os genes \ensuremath{\Varid{gh}} e \ensuremath{\Varid{gk}}
+A lei dual da recursividade mútua permitiu derivar os genes \ensuremath{\Varid{gh}} e \ensuremath{\Varid{gk}}
 a partir das funções mutuamente recursivas \ensuremath{\Varid{h}} e \ensuremath{\Varid{k}}.
 
 \textbf{Aplicação ao fair-merge}
@@ -1262,6 +1291,56 @@ onde \ensuremath{\Conid{S}\mathrel{=}\Conid{Stream}\;\Varid{a}}
 O anamorfismo constrói a stream resultado aplicando repetidamente o gene:
 cada aplicação extrai um elemento e produz um novo estado com o Either invertido,
 garantindo a alternância perfeita entre os dois streams de entrada.
+
+\textbf{Verificação da solução}
+
+Para testar a implementação, definimos as seguintes funções auxiliares:
+
+\begin{hscode}\SaveRestoreHook
+\column{B}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{29}{@{}>{\hspre}l<{\hspost}@{}}%
+\column{E}{@{}>{\hspre}l<{\hspost}@{}}%
+\>[B]{}\mbox{\onelinecomment  Função para visualizar os primeiros n elementos de um stream}{}\<[E]%
+\\
+\>[B]{}\Varid{takeStream}\mathbin{::}\Conid{Int}\to \Conid{Stream}\;\Varid{a}\to [\mskip1.5mu \Varid{a}\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{takeStream}\;\mathrm{0}\;\anonymous \mathrel{=}[\mskip1.5mu \mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{takeStream}\;\Varid{n}\;(\Conid{Cons}\;(\Varid{x},\Varid{xs}))\mathrel{=}\Varid{x}\mathbin{:}\Varid{takeStream}\;(\Varid{n}\mathbin{-}\mathrm{1})\;\Varid{xs}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mbox{\onelinecomment  Gerar stream de naturais começando em n, incrementando de step}{}\<[E]%
+\\
+\>[B]{}\Varid{natsFrom}\mathbin{::}\Conid{Int}\to \Conid{Int}\to \Conid{Stream}\;\Conid{Int}{}\<[E]%
+\\
+\>[B]{}\Varid{natsFrom}\;\Varid{start}\;\Varid{step}\mathrel{=}\lanabracket\,\lambda \Varid{x}\to (\Varid{x},\Varid{x}\mathbin{+}\Varid{step})\,\ranabracket\;\Varid{start}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mbox{\onelinecomment  Streams de teste}{}\<[E]%
+\\
+\>[B]{}\Varid{nats1}\mathbin{::}\Conid{Stream}\;\Conid{Int}{}\<[E]%
+\\
+\>[B]{}\Varid{nats1}\mathrel{=}\Varid{natsFrom}\;\mathrm{1}\;\mathrm{1}{}\<[29]%
+\>[29]{}\mbox{\onelinecomment  1, 2, 3, 4, 5, ...}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{nats10}\mathbin{::}\Conid{Stream}\;\Conid{Int}{}\<[E]%
+\\
+\>[B]{}\Varid{nats10}\mathrel{=}\Varid{natsFrom}\;\mathrm{10}\;\mathrm{10}{}\<[29]%
+\>[29]{}\mbox{\onelinecomment  10, 20, 30, 40, ...}{}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\mbox{\onelinecomment  Testes pré-definidos}{}\<[E]%
+\\
+\>[B]{}\Varid{test1}\mathbin{::}[\mskip1.5mu \Conid{Int}\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{test1}\mathrel{=}\Varid{takeStream}\;\mathrm{16}\;(\Varid{fair\char95 merge'}\;(i_1\;(\Varid{nats1},\Varid{nats10}))){}\<[E]%
+\\[\blanklineskip]%
+\>[B]{}\Varid{test2}\mathbin{::}[\mskip1.5mu \Conid{Int}\mskip1.5mu]{}\<[E]%
+\\
+\>[B]{}\Varid{test2}\mathrel{=}\Varid{takeStream}\;\mathrm{16}\;(\Varid{fair\char95 merge'}\;(i_2\;(\Varid{nats1},\Varid{nats10}))){}\<[E]%
+\ColumnHook
+\end{hscode}\resethooks
+
+O resultado de \ensuremath{\Varid{test1}} mostra a alternância começando pelo stream A (1, 2, 3, ...),
+enquanto \ensuremath{\Varid{test2}} mostra a alternância começando pelo stream B (10, 20, 30, ...).
+Ambos respeitam perfeitamente o padrão de fair-merge: um elemento de cada stream alternadamente.
 
 
 %--------------------------- PROBLEMA 4 -----------------------------------------%

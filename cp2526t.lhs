@@ -125,10 +125,10 @@
 
 %====== DEFINIR GRUPO E ELEMENTOS =============================================%
 
-\group{G99}
-\studentA{106807}{Marco Sèvegrand }
-\studentB{107372}{Nuno Rebelo }
-\studentC{xxxxxx}{Nome }
+\group{G18}
+\studentA{106807}{Marco Rafael Vieira Sèvegrand }
+\studentB{107372}{Nuno Henrique Macedo Rebelo }
+\studentC{107326}{Guilherme Santos da Costa }
 
 %==============================================================================%
 
@@ -684,7 +684,7 @@ as subárvores esquerda e direita, recebendo listas de níveis para cada uma. O 
 nível no topo, e os restantes níveis são fundidos par a par através de |zipLevels|, alinhando elementos
 da mesma profundidade das duas subárvores.
 
-Implementação:
+\textbf{Implementação}
 \begin{code}
 glevels :: Either () (a, ([[a]], [[a]])) -> [[a]]
 glevels (Left ()) = []
@@ -695,7 +695,7 @@ glevels (Right (a, (ls, rs))) = [a] : zipLevels ls rs
     zipLevels (l:ls) (r:rs) = (l ++ r) : zipLevels ls rs
 \end{code}
 
-Diagrama e Propriedades:
+\textbf{Diagrama do catamorfismo}
 
 Catamorfismo |levels|:
 \begin{eqnarray*}
@@ -733,7 +733,7 @@ os seus filhos no \emph{fim} da fila. Este regime FIFO (first-in-first-out) gara
 os nós exactamente na ordem breadth-first: primeiro todos os nós do nível 0 (raiz), depois nível 1,
 depois nível 2, e assim sucessivamente.
 
-Implementação:
+\textbf{Implementação}
 \begin{code}
 bft t = anaList gbf [t]
   where
@@ -742,7 +742,7 @@ bft t = anaList gbf [t]
     gbf (Node (a, (l, r)) : ts) = Right (a, ts ++ [l, r])
 \end{code}
 
-Diagrama e Propriedades:
+\textbf{Diagrama do anamorfismo}
 
 Anamorfismo |bft|:
 \begin{eqnarray*}
@@ -795,7 +795,7 @@ O estado é representado por um vector de cinco componentes |[s, h, k, j, m]|:
 
 A transição de um estado para o seguinte é dada pela função |loop|:
 \begin{displaymath}
-\text{novo estado} = \left[ \frac{h}{k} + s, \, x^2 h, \, k j, \, j + m, \, m + 8 \right]
+\text{novo estado} = \left[ \frac{h}{k} + s, \, x^2 * h, \, k * j, \, j + m, \, m + 8 \right]
 \end{displaymath}
 
 Estado inicial para $n = 0$:
@@ -806,7 +806,35 @@ Estado inicial para $n = 0$:
 Este estado inicial contém já o primeiro termo da série (|s = x|) e prepara o cálculo do segundo termo
 (com |h = x^3| e |k = 6 = 3!|).
 
-Implementação:
+\textbf{Exemplo de iterações para $x = 2$}
+
+A tabela seguinte mostra a evolução do estado ao longo das primeiras iterações:
+
+\begin{center}
+\begin{tabular}{cccccc}
+\hline
+$n$ & $s$ & $h$ & $k$ & $j$ & $m$ \\
+\hline
+0 & 2.000000 & 8 & 6 & 20 & 22 \\
+1 & 3.333333 & 32 & 120 & 42 & 30 \\
+2 & 3.600000 & 128 & 5040 & 72 & 38 \\
+3 & 3.625397 & 512 & 362880 & 110 & 46 \\
+4 & 3.626808 & 2048 & 39916800 & 156 & 54 \\
+5 & 3.626859 & 8192 & $6.23 \times 10^9$ & 210 & 62 \\
+\hline
+\end{tabular}
+\end{center}
+
+Observa-se que:
+\begin{itemize}
+    \item O valor de $s$ converge rapidamente para $\sinh(2) \approx 3.626860$.
+    \item O numerador $h$ cresce como potências de $x^2 = 4$: $8 \to 32 \to 128 \to 512 \to \cdots$ (correspondendo a $2^3, 2^5, 2^7, \ldots$).
+    \item O denominador $k$ cresce factorialmente: $6 \to 120 \to 5040 \to \cdots$ (correspondendo a $3!, 5!, 7!, \ldots$).
+    \item Os valores $j$ e $m$ seguem progressões que garantem a multiplicação correta dos factoriais sucessivos.
+\end{itemize}
+
+\textbf{Implementação}
+
 \begin{code}
 f_sinh :: Double -> Int -> Double
 f_sinh x n = head (worker n)
@@ -817,7 +845,8 @@ f_sinh x n = head (worker n)
     start x = [x, x^3, 6, 20, 22]
 \end{code}
 
-Diagrama do catamorfismo:
+\textbf{Diagrama do catamorfismo}
+
 \begin{eqnarray*}
 \xymatrix@@C=1.5cm{
     |Nat0|
@@ -890,7 +919,7 @@ Aplicando a |f = either h k| e |g = either gh gk|:
 \qed
 \end{eqnarray*}
 
-Esta é a \textbf{lei dual da recursividade mútua}: permite derivar os genes |gh| e |gk|
+A lei dual da recursividade mútua permitiu derivar os genes |gh| e |gk|
 a partir das funções mutuamente recursivas |h| e |k|.
 
 \textbf{Aplicação ao fair-merge}
@@ -974,6 +1003,39 @@ onde |S = Stream a|
 O anamorfismo constrói a stream resultado aplicando repetidamente o gene:
 cada aplicação extrai um elemento e produz um novo estado com o Either invertido,
 garantindo a alternância perfeita entre os dois streams de entrada.
+
+\textbf{Verificação da solução}
+
+Para testar a implementação, definimos as seguintes funções auxiliares:
+
+\begin{code}
+-- Função para visualizar os primeiros n elementos de um stream
+takeStream :: Int -> Stream a -> [a]
+takeStream 0 _ = []
+takeStream n (Cons(x, xs)) = x : takeStream (n-1) xs
+
+-- Gerar stream de naturais começando em n, incrementando de step
+natsFrom :: Int -> Int -> Stream Int
+natsFrom start step = anaStream (\x -> (x, x+step)) start
+
+-- Streams de teste
+nats1 :: Stream Int
+nats1 = natsFrom 1 1        -- 1, 2, 3, 4, 5, ...
+
+nats10 :: Stream Int
+nats10 = natsFrom 10 10     -- 10, 20, 30, 40, ...
+
+-- Testes pré-definidos
+test1 :: [Int]
+test1 = takeStream 16 (fair_merge' (Left (nats1, nats10)))
+
+test2 :: [Int]
+test2 = takeStream 16 (fair_merge' (Right (nats1, nats10)))
+\end{code}
+
+O resultado de |test1| mostra a alternância começando pelo stream A (1, 2, 3, ...),
+enquanto |test2| mostra a alternância começando pelo stream B (10, 20, 30, ...).
+Ambos respeitam perfeitamente o padrão de fair-merge: um elemento de cada stream alternadamente.
 
 
 %--------------------------- PROBLEMA 4 -----------------------------------------%
